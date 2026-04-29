@@ -14,7 +14,6 @@ dbt-analytics/                 ← dbt project (staging + mart models)
 gen2-warehouse/                ← Gen2 warehouse + Optima Indexing
 iceberg/                       ← Iceberg partitioned writes
 interactive/                   ← Interactive Tables + warehouse
-ml-models/                     ← HuggingFace model import
 security-and-governance/       ← Row Access Policies (RBAC)
 snowflake-intelligence/        ← Cortex Agent + Semantic View
 snowpipe-streaming-python/     ← Python Snowpipe Streaming SDK
@@ -29,6 +28,7 @@ tests/                         ← Validation notebooks
 2. **Database:** `DASH_AUTOMATED_INTELLIGENCE_DB` for all exercises.
 3. **Role:** `AUTOMATED_INTELLIGENCE_ADMIN` (primary), `WEST_COAST_MANAGER` (RBAC demo).
 4. **Warehouses:** `HOL_WH` (standard), `HOL_GEN2_WH` (Gen2), `HOL_INTERACTIVE_WH` (interactive).
+5. **Before going public:** Squash all commits into a single clean commit before flipping the repo to public.
 
 ## When Editing
 
