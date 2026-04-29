@@ -1,0 +1,10 @@
+{
+  "user": "YOUR_USER",
+  "account": "YOUR_ACCOUNT",
+  "url": "https://YOUR_ACCOUNT.snowflakecomputing.com:443",
+  "role": "YOUR_ROLE",
+  "private_key_path": "/path/to/your/private_key.p8",
+  "database": "YOUR_DATABASE",
+  "schema": "STAGING",
+  "warehouse": "YOUR_WAREHOUSE"
+}

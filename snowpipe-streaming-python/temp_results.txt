@@ -1,0 +1,32 @@
+Final Results: 10M Orders with 10 Parallel Instances                                                                                                          
+
+✅ Total orders: 10,000,000 (TEN MILLION!)                                                                                                                    
+✅ Successful instances: 10/10 (100% success rate)                                                                                                            
+✅ Failed instances: 0                                                                                                                                        
+✅ Estimated order items: ~55 million                                                                                                                         
+
+Performance Breakdown by Instance                                                                                                                             
+                                                              
+  Instance   Orders      Customer Range   Duration (seconds)  
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 
+  0          1,000,000   1-2,050          297.0s (~4m 57s)    
+  1          1,000,000   2,051-4,100      296.9s (~4m 57s)    
+  2          1,000,000   4,101-6,150      293.3s (~4m 53s)    
+  3          1,000,000   6,151-8,200      289.7s (~4m 50s)    
+  4          1,000,000   8,201-10,250     287.2s (~4m 47s)    
+  5          1,000,000   10,251-12,300    286.4s (~4m 46s)    
+  6          1,000,000   12,301-14,350    286.6s (~4m 47s)    
+  7          1,000,000   14,351-16,400    284.9s (~4m 45s)    
+  8          1,000,000   16,401-18,450    283.5s (~4m 44s)    
+  9          1,000,000   18,451-20,505    282.1s (~4m 42s)    
+                                                              
+
+Key Metrics                                                                                                                                                   
+
+
+ • Total execution time: ~5 minutes                                                                                                                           
+ • Average throughput: ~34,000 orders/second                                                                                                                  
+ • Peak throughput: Higher than individual instances due to parallelism                                                                                       
+ • Parallelism: All 10 instances ran concurrently                                                                                                             
+ • Reliability: 100% success rate                                                                                                                             
+ • Customer partitioning: Perfect distribution across 20,505 customers        

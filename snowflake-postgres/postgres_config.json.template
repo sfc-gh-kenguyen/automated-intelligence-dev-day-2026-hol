@@ -1,0 +1,7 @@
+{
+  "host": "YOUR_POSTGRES_HOST.postgres.snowflake.app",
+  "port": 5432,
+  "database": "postgres",
+  "user": "YOUR_USER",
+  "password": "YOUR_PASSWORD"
+}

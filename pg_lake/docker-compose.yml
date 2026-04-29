@@ -1,0 +1,51 @@
+services:
+  pg_lake:
+    image: pg_lake:local
+    container_name: pg_lake
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./scripts/entrypoint-postgres.sh:/entrypoint-postgres.sh
+      - ./scripts/init-postgres.sql:/init-postgres.sql
+      - pgduck-unix-socket-volume:/home/postgres/pgduck_socket_dir
+      - pg-shared-tmp-dir-volume:/home/postgres/pgsql-17/data/base/pgsql_tmp
+      - ~/.aws:/home/postgres/.aws:ro
+    entrypoint: ["/entrypoint-postgres.sh"]
+    restart: unless-stopped
+    environment:
+      PG_MAJOR: "17"
+      AWS_DEFAULT_REGION: us-west-2
+    healthcheck:
+      test: ["CMD", "psql", "-U", "postgres", "-c", "SELECT 1;"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    depends_on:
+      pgduck-server:
+        condition: service_healthy
+
+  pgduck-server:
+    image: pgduck-server:local
+    container_name: pgduck-server
+    volumes:
+      - ./scripts/entrypoint-pgduck-server.sh:/entrypoint-pgduck-server.sh
+      - ./scripts/init-pgduck-server.sql:/init-pgduck-server.sql
+      - pgduck-unix-socket-volume:/home/postgres/pgduck_socket_dir
+      - pg-shared-tmp-dir-volume:/home/postgres/pgsql-17/data/base/pgsql_tmp
+      - ~/.aws:/home/postgres/.aws:ro
+    entrypoint: ["/entrypoint-pgduck-server.sh"]
+    restart: unless-stopped
+    environment:
+      PG_MAJOR: "17"
+      AWS_DEFAULT_REGION: us-west-2
+    healthcheck:
+      test: ["CMD", "psql", "-p", "5332", "-h", "/home/postgres/pgduck_socket_dir", "-c", "SELECT 1;"]
+      interval: 6s
+      timeout: 2s
+      start_period: 20s
+      retries: 3
+
+volumes:
+  pgduck-unix-socket-volume:
+  pg-shared-tmp-dir-volume:

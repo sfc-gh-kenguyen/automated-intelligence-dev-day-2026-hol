@@ -1,0 +1,6 @@
+name: streamlit_dashboard
+channels:
+  - snowflake
+dependencies:
+  - streamlit
+  - plotly

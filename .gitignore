@@ -1,0 +1,459 @@
+# ============================================================================
+# Secrets, Credentials, and Sensitive Data
+# ============================================================================
+# NEVER commit these files - they contain passwords, tokens, and secrets
+
+# Streamlit secrets
+**/secrets.toml
+
+# Snowflake credentials
+config.toml
+**/config.toml
+.snowflake/
+**/.snowflake/
+credentials.json
+**/credentials.json
+snowflake_credentials.json
+*.key
+*.pem
+*.p8
+*.pub
+snowpipe-streaming-java/rsa_key.p8
+snowpipe-streaming-java/rsa_key.pub
+snowpipe-streaming-python/rsa_key.p8
+snowpipe-streaming-python/rsa_key.pub
+
+# Configuration files with credentials
+config.properties
+**/config.properties
+snowpipe-streaming-java/config.properties
+snowpipe-streaming-python/config.properties
+agent-evaluation/config.properties
+profile.json
+**/profile.json
+snowpipe-streaming-java/profile.json
+snowpipe-streaming-python/profile.json
+profile_staging.json
+**/profile_staging.json
+snowpipe-streaming-java/profile_staging.json
+snowpipe-streaming-python/profile_staging.json
+postgres_config.json
+**/postgres_config.json
+snowflake-postgres/postgres_config.json
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+**/.env
+**/.env.*
+
+# SSH and GPG keys
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.ppk
+authorized_keys
+known_hosts
+
+# AWS credentials
+.aws/credentials
+.aws/config
+
+# GCP credentials
+*-key.json
+service-account*.json
+gcloud-service-key.json
+
+# Azure credentials
+.azure/
+
+# API tokens and secrets
+.secrets
+.secrets.json
+secrets.yaml
+secrets.yml
+*_secrets.*
+token.txt
+api_key.txt
+*.token
+
+
+# ============================================================================
+# Python
+# ============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.virtualenv/
+virtualenv/
+Pipfile.lock
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+.hypothesis/
+pytestdebug.log
+
+# TruLens (agent evaluation framework)
+.trulens/
+trulens_cache/
+agent-evaluation/.trulens/
+agent-evaluation/trulens_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath
+*.sage.py
+
+# Spyder
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# mkdocs
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# pytype
+.pytype/
+
+
+# ============================================================================
+# Node.js / JavaScript
+# ============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Build directories
+dist/
+build/
+.next/
+out/
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+
+# ============================================================================
+# Java / Scala / Kotlin
+# ============================================================================
+target/
+snowpipe-streaming-java/target/
+snowpipe-streaming-python/target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+
+# Maven
+.mvn/
+snowpipe-streaming-java/.mvn/
+snowpipe-streaming-python/.mvn/
+mvnw
+mvnw.cmd
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+snowpipe-streaming-java/dependency-reduced-pom.xml
+snowpipe-streaming-python/dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+target/maven-archiver/
+snowpipe-streaming-java/target/maven-archiver/
+snowpipe-streaming-java/target/maven-archiver/pom.properties
+
+# Gradle
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+**/build/
+
+
+# ============================================================================
+# Go
+# ============================================================================
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.dylib
+bin/
+vendor/
+
+# Test coverage
+*.test
+*.out
+
+# Go workspace
+go.work
+
+
+# ============================================================================
+# Rust
+# ============================================================================
+Cargo.lock
+/target/
+**/*.rs.bk
+
+
+# ============================================================================
+# IDEs and Editors
+# ============================================================================
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA / PyCharm / WebStorm / etc.
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.*.swp
+.*.swo
+
+# Emacs
+\#*\#
+.\#*
+
+# JetBrains
+.idea/
+*.iml
+
+
+# ============================================================================
+# Operating Systems
+# ============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+
+# ============================================================================
+# Databases
+# ============================================================================
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+
+
+# ============================================================================
+# Logs and Temporary Files
+# ============================================================================
+*.log
+logs/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.swp
+*.swo
+*~
+.cache/
+tmp/
+temp/
+
+
+# ============================================================================
+# Docker
+# ============================================================================
+.dockerignore
+
+
+# ============================================================================
+# Terraform
+# ============================================================================
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+
+# ============================================================================
+# Kubernetes
+# ============================================================================
+kubeconfig
+*.kubeconfig
+
+
+# ============================================================================
+# CI/CD
+# ============================================================================
+.github/workflows/secrets.yml
+
+
+# ============================================================================
+# DBT (Data Build Tool)
+# ============================================================================
+target/
+dbt_packages/
+dbt-analytics/target/
+dbt-analytics/dbt_packages/
+dbt-analytics/logs/
+dbt-analytics/dbt_modules/
+*.log
+
+
+# ============================================================================
+# Demo Output (generated during demos)
+# ============================================================================
+demo-output/
+
+
+# ============================================================================
+# Demo Video (Remotion project - kept local for now)
+# ============================================================================
+demo-video/
+
+
+# ============================================================================
+# Miscellaneous
+# ============================================================================
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Large files (should use Git LFS instead)
+*.parquet
+*.csv
+*.tsv
+*.json.gz
+*.pickle
+*.pkl
+talk/demo-script.md
+talk/handout.md
+talk/slides-outline.md
+talk/codebase-summary.md
+
+# dbt local user config
+dbt-analytics/.user.yml

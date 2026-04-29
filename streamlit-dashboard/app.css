@@ -1,0 +1,27 @@
+.logo-spacing {
+    padding-top: 1px;
+}
+
+.title-spacing {
+    padding-top: 0px;
+}
+
+/* Reduce top padding/margin */
+.block-container {
+    padding-top: 1rem !important;
+}
+
+header {
+    padding-top: 0 !important;
+}
+
+/* Increase tab label font size */
+.stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+    font-size: 1.2rem !important;
+    font-weight: 500 !important;
+}
+
+.stTabs [data-baseweb="tab-list"] button {
+    padding: 10px 20px !important;
+}
+

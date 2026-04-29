@@ -1,0 +1,19 @@
+definition_version: 2
+entities:
+  the_dashboard:
+    type: streamlit
+    identifier:
+      name: THE_DASHBOARD
+      schema: RAW
+      database: AUTOMATED_INTELLIGENCE
+    title: "The Dash Board"
+    query_warehouse: AUTOMATED_INTELLIGENCE_WH
+    main_file: streamlit_app.py
+    stage: AUTOMATED_INTELLIGENCE.RAW.THE_DASHBOARD_STAGE
+    artifacts:
+      - streamlit_app.py
+      - shared.py
+      - app.css
+      - environment.yml
+      - assets/
+      - pages/

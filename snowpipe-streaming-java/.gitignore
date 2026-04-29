@@ -1,0 +1,39 @@
+# Ignore IDE files
+.idea/
+*.iml
+.vscode/
+
+# Ignore build outputs
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Ignore Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Ignore logs
+*.log
+logs/
+
+# Ignore credentials and sensitive files
+profile.json
+rsa_key.p8
+rsa_key.pub
+*.pem
+*.key
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore temp files
+*.tmp
+*.swp
+*~
+
+# Maven Shade Plugin artifact
+dependency-reduced-pom.xml

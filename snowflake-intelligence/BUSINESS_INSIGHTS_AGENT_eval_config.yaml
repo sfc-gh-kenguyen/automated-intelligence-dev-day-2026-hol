@@ -1,0 +1,22 @@
+dataset:
+  dataset_type: "cortex agent"
+  table_name: "AUTOMATED_INTELLIGENCE.SEMANTIC.BUSINESS_INSIGHTS_AGENT_EVAL_DATASET"
+  dataset_name: "BUSINESS_INSIGHTS_AGENT_eval_ds_20260422"
+  column_mapping:
+    query_text: "INPUT_QUERY"
+    ground_truth: "GROUND_TRUTH"
+
+evaluation:
+  agent_params:
+    agent_name: "AUTOMATED_INTELLIGENCE.SEMANTIC.BUSINESS_INSIGHTS_AGENT"
+    agent_type: "CORTEX AGENT"
+  run_params:
+    label: "evaluation"
+    description: "E2E pipeline test evaluation - 5 test cases across all 3 agent tools"
+  source_metadata:
+    type: "dataset"
+    dataset_name: "BUSINESS_INSIGHTS_AGENT_eval_ds_20260422"
+
+metrics:
+  - "answer_correctness"
+  - "logical_consistency"

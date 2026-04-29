@@ -1,0 +1,9 @@
+{
+  "user": "YOUR_SNOWFLAKE_USER",
+  "account": "YOUR_ACCOUNT_IDENTIFIER",
+  "url": "https://YOUR_ACCOUNT_IDENTIFIER.snowflakecomputing.com:443",
+  "private_key": "-----BEGIN PRIVATE KEY-----\\nYOUR_PRIVATE_KEY_CONTENT_HERE\\n-----END PRIVATE KEY-----",
+  "database": "AUTOMATED_INTELLIGENCE",
+  "schema": "RAW",
+  "warehouse": "AUTOMATED_INTELLIGENCE_WH"
+}

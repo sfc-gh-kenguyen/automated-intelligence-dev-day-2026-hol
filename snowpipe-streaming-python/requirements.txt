@@ -1,0 +1,6 @@
+# High-performance Snowpipe Streaming SDK (GA Sep 2025)
+# Replaces the classic snowflake-ingest package
+# See: https://docs.snowflake.com/en/user-guide/snowpipe-streaming/snowpipe-streaming-high-performance-migration
+snowpipe-streaming
+snowflake-connector-python>=3.6.0
+cryptography>=3.1.0
