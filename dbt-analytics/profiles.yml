@@ -9,7 +9,7 @@ automated_intelligence:
       user: 'not needed'
       role: SNOWFLAKE_INTELLIGENCE_ADMIN
       warehouse: automated_intelligence_wh
-      database: automated_intelligence
+      database: dash_automated_intelligence_db
       schema: staging  # Base schema (will be overridden by custom_schema in models)
       threads: 4
       client_session_keep_alive: False
@@ -20,7 +20,7 @@ automated_intelligence:
       user: 'not needed'
       role: SNOWFLAKE_INTELLIGENCE_ADMIN
       warehouse: automated_intelligence_wh
-      database: automated_intelligence
+      database: dash_automated_intelligence_db
       schema: staging  # Base schema (will be overridden by custom_schema in models)
       threads: 4
       client_session_keep_alive: False

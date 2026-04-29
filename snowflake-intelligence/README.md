@@ -14,7 +14,7 @@ snow sql -f setup.sql -c dash-builder-si
 ## Files
 
 - `business_insights_semantic_model.yaml` - Semantic model definition for Cortex Analyst (uses logical table names for verified queries)
-- `create_agent.sql` - Creates Cortex Agent in `AUTOMATED_INTELLIGENCE.SEMANTIC` schema for natural language queries
+- `create_agent.sql` - Creates Cortex Agent in `DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC` schema for natural language queries
 - `create_postgres_search_services.sql` - Creates Cortex Search services for Postgres-synced data (product reviews & support tickets)
 
 ## Setup Instructions
@@ -22,7 +22,7 @@ snow sql -f setup.sql -c dash-builder-si
 ### 1. Upload Semantic Model
 ```bash
 snow stage copy snowflake-intelligence/business_insights_semantic_model.yaml \
-  @automated_intelligence.raw.semantic_models/ --overwrite -c dash-builder-si
+  @dash_automated_intelligence_db.raw.semantic_models/ --overwrite -c dash-builder-si
 ```
 
 ### 2. Create Cortex Agent
@@ -38,22 +38,22 @@ snow sql -f snowflake-intelligence/create_cortex_search.sql -c dash-builder-si
 ## What Gets Created
 
 ### Semantic Model Stage
-- **Stage**: `automated_intelligence.raw.semantic_models`
+- **Stage**: `dash_automated_intelligence_db.raw.semantic_models`
 - Stores YAML semantic model files for Cortex Analyst
 - **Note**: Verified queries use logical table names (e.g., `orders`, `daily_business_metrics`) instead of physical table names
 
 ### Cortex Agent
-- **Agent**: `automated_intelligence.semantic.order_analytics_agent`
-- Created in the `SEMANTIC` schema using `AUTOMATED_INTELLIGENCE` role
+- **Agent**: `dash_automated_intelligence_db.semantic.order_analytics_agent`
+- Created in the `SEMANTIC` schema using `AUTOMATED_INTELLIGENCE_ADMIN` role
 - Enables natural language queries over order data
 - Uses semantic model for context-aware SQL generation
 - Requires `CREATE SNOWFLAKE INTELLIGENCE ON ACCOUNT` privilege
 
 ### Cortex Search Services
-- **Service**: `automated_intelligence.semantic.product_reviews_search`
+- **Service**: `dash_automated_intelligence_db.semantic.product_reviews_search`
   - Enables semantic search over product reviews synced from Postgres
   - Search by review text with attributes: product_id, customer_id, rating, review_title, review_date
-- **Service**: `automated_intelligence.semantic.support_tickets_search`
+- **Service**: `dash_automated_intelligence_db.semantic.support_tickets_search`
   - Enables semantic search over support tickets synced from Postgres
   - Search by description with attributes: customer_id, category, priority, subject, status, ticket_date
 
@@ -61,13 +61,13 @@ snow sql -f snowflake-intelligence/create_cortex_search.sql -c dash-builder-si
 
 ### Verify Stage
 ```sql
-LIST @automated_intelligence.raw.semantic_models;
+LIST @dash_automated_intelligence_db.raw.semantic_models;
 ```
 
 ### Test Cortex Agent
 ```sql
-USE ROLE AUTOMATED_INTELLIGENCE;
-USE DATABASE automated_intelligence;
+USE ROLE AUTOMATED_INTELLIGENCE_ADMIN;
+USE DATABASE dash_automated_intelligence_db;
 USE SCHEMA semantic;
 
 -- Ask questions in natural language
@@ -87,7 +87,7 @@ SELECT SNOWFLAKE.CORTEX.COMPLETE(
 ```sql
 SELECT PARSE_JSON(
   SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-    'automated_intelligence.semantic.product_reviews_search',
+    'dash_automated_intelligence_db.semantic.product_reviews_search',
     '{
       "query": "quality issues with boots",
       "columns": ["review_title", "review_text", "rating"],
@@ -101,7 +101,7 @@ SELECT PARSE_JSON(
 ```sql
 SELECT PARSE_JSON(
   SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-    'automated_intelligence.semantic.support_tickets_search',
+    'dash_automated_intelligence_db.semantic.support_tickets_search',
     '{
       "query": "shipping delays and refund",
       "columns": ["subject", "description", "category", "priority"],
@@ -150,7 +150,7 @@ tools:
         required: ["segment"]
       implementation:
         type: sql
-        sql: "CALL AUTOMATED_INTELLIGENCE.MODELS.GET_PRODUCT_RECOMMENDATIONS(:n_customers, :n_products, :segment)"
+        sql: "CALL DASH_AUTOMATED_INTELLIGENCE_DB.MODELS.GET_PRODUCT_RECOMMENDATIONS(:n_customers, :n_products, :segment)"
 ```
 
 **Sample Conversational Queries:**
@@ -222,12 +222,12 @@ Cortex Agent Evaluations let you systematically test and measure agent quality a
 
 ```sql
 -- 1. Create evaluation source table (query + ground truth VARIANT)
-CREATE OR REPLACE TABLE AUTOMATED_INTELLIGENCE.SEMANTIC.AGENT_EVAL_TABLE (
+CREATE OR REPLACE TABLE DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.AGENT_EVAL_TABLE (
     input_query VARCHAR,
     ground_truth VARIANT
 );
 
-INSERT INTO AUTOMATED_INTELLIGENCE.SEMANTIC.AGENT_EVAL_TABLE
+INSERT INTO DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.AGENT_EVAL_TABLE
 SELECT column1, PARSE_JSON(column2) FROM VALUES
     ('What were total sales last month?',
      '{"ground_truth_output": "The agent should use the cortex_analyst_text_to_sql tool to query revenue data and return a dollar amount for the previous month."}'),
@@ -239,16 +239,16 @@ SELECT column1, PARSE_JSON(column2) FROM VALUES
 -- 2. Register as evaluation dataset
 CALL SYSTEM$CREATE_EVALUATION_DATASET(
     'Cortex Agent',
-    'AUTOMATED_INTELLIGENCE.SEMANTIC.AGENT_EVAL_TABLE',
-    'AUTOMATED_INTELLIGENCE.SEMANTIC.BUSINESS_AGENT_EVALSET',
+    'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.AGENT_EVAL_TABLE',
+    'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_AGENT_EVALSET',
     OBJECT_CONSTRUCT('query_text', 'INPUT_QUERY', 'ground_truth', 'GROUND_TRUTH')
 );
 
 -- 3. Run evaluation (returns evaluation run ID)
 SELECT EXECUTE_AI_EVALUATION('START', {
     'evaluation_name': 'business_agent_eval_run_1',
-    'agent': 'AUTOMATED_INTELLIGENCE.SEMANTIC.BUSINESS_INSIGHTS_AGENT',
-    'dataset': 'AUTOMATED_INTELLIGENCE.SEMANTIC.BUSINESS_AGENT_EVALSET',
+    'agent': 'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT',
+    'dataset': 'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_AGENT_EVALSET',
     'metrics': ['answer_correctness', 'logical_consistency']
 });
 

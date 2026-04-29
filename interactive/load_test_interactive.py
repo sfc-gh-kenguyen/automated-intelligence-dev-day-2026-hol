@@ -101,7 +101,7 @@ class LoadTester:
                 order_date,
                 order_status,
                 total_amount
-            FROM automated_intelligence.raw.orders
+            FROM dash_automated_intelligence_db.raw.orders
             WHERE customer_id = {customer_id}
             ORDER BY order_date DESC
             LIMIT 10
@@ -114,7 +114,7 @@ class LoadTester:
                 order_date,
                 order_status,
                 total_amount
-            FROM automated_intelligence.interactive.customer_order_analytics
+            FROM dash_automated_intelligence_db.interactive.customer_order_analytics
             WHERE customer_id = {customer_id}
             ORDER BY order_date DESC
             LIMIT 10
@@ -132,7 +132,7 @@ class LoadTester:
                 order_date,
                 order_status,
                 total_amount
-            FROM automated_intelligence.raw.orders
+            FROM dash_automated_intelligence_db.raw.orders
             WHERE order_id = {order_id}
             """
         else:
@@ -143,7 +143,7 @@ class LoadTester:
                 order_date,
                 order_status,
                 total_amount
-            FROM automated_intelligence.interactive.order_lookup
+            FROM dash_automated_intelligence_db.interactive.order_lookup
             WHERE order_id = {order_id}
             """
     
@@ -158,7 +158,7 @@ class LoadTester:
                 COUNT(*) as order_count,
                 SUM(total_amount) as total_spent,
                 AVG(total_amount) as avg_order
-            FROM automated_intelligence.raw.orders
+            FROM dash_automated_intelligence_db.raw.orders
             WHERE customer_id = {customer_id}
             GROUP BY customer_id
             """
@@ -169,7 +169,7 @@ class LoadTester:
                 COUNT(*) as order_count,
                 SUM(total_amount) as total_spent,
                 AVG(total_amount) as avg_order
-            FROM automated_intelligence.interactive.customer_order_analytics
+            FROM dash_automated_intelligence_db.interactive.customer_order_analytics
             WHERE customer_id = {customer_id}
             GROUP BY customer_id
             """

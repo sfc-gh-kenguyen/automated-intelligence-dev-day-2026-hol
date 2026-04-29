@@ -21,9 +21,9 @@ This application streams synthetic e-commerce data (customers, orders, and order
 ## Architecture
 
 ### Tables
-- `AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS`
-- `AUTOMATED_INTELLIGENCE.RAW.ORDERS`
-- `AUTOMATED_INTELLIGENCE.RAW.ORDER_ITEMS`
+- `DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS`
+- `DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS`
+- `DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDER_ITEMS`
 
 ### Channels (2 channels - customers not streamed)
 1. **orders_channel** → `ORDERS` table
@@ -55,11 +55,11 @@ pip install -r requirements.txt
 
 ### 2. Create Snowflake PIPE Objects
 
-Run the following SQL in Snowflake using the `AUTOMATED_INTELLIGENCE` role:
+Run the following SQL in Snowflake using the `AUTOMATED_INTELLIGENCE_ADMIN` role:
 
 ```sql
-USE ROLE AUTOMATED_INTELLIGENCE;
-USE DATABASE AUTOMATED_INTELLIGENCE;
+USE ROLE AUTOMATED_INTELLIGENCE_ADMIN;
+USE DATABASE DASH_AUTOMATED_INTELLIGENCE_DB;
 USE SCHEMA RAW;
 
 CREATE OR REPLACE PIPE ORDERS_PIPE AS COPY INTO ORDERS;
@@ -99,10 +99,10 @@ Edit `profile.json`:
   "user": "YOUR_USER",
   "url": "https://YOUR_ACCOUNT.snowflakecomputing.com",
   "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----",
-  "database": "AUTOMATED_INTELLIGENCE",
+  "database": "DASH_AUTOMATED_INTELLIGENCE_DB",
   "schema": "RAW",
   "warehouse": "AUTOMATED_INTELLIGENCE_WH",
-  "role": "AUTOMATED_INTELLIGENCE"
+  "role": "AUTOMATED_INTELLIGENCE_ADMIN"
 }
 ```
 
@@ -266,11 +266,11 @@ Check ingestion progress:
 
 ```sql
 -- View channel status
-SELECT * FROM TABLE(INFORMATION_SCHEMA.PIPE_CHANNEL_STATUS('AUTOMATED_INTELLIGENCE.RAW.ORDERS_PIPE'));
+SELECT * FROM TABLE(INFORMATION_SCHEMA.PIPE_CHANNEL_STATUS('DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS_PIPE'));
 
 -- Check row counts
-SELECT COUNT(*) FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS;
-SELECT COUNT(*) FROM AUTOMATED_INTELLIGENCE.RAW.ORDER_ITEMS;
+SELECT COUNT(*) FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS;
+SELECT COUNT(*) FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDER_ITEMS;
 ```
 
 ## Troubleshooting
@@ -292,7 +292,7 @@ pip install snowpipe-streaming==1.0.2
 - **Ensure role field is present** in profile.json
 
 ### No Data Appearing
-- Verify PIPE objects exist: `SHOW PIPES IN SCHEMA AUTOMATED_INTELLIGENCE.RAW;`
+- Verify PIPE objects exist: `SHOW PIPES IN SCHEMA DASH_AUTOMATED_INTELLIGENCE_DB.RAW;`
 - Check for errors: `SELECT * FROM TABLE(VALIDATE_PIPE_LOAD('ORDERS_PIPE', ...));`
 - Wait briefly for data to be visible (ingestion latency varies)
 - Check schema setting in profile.json matches your target tables

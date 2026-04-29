@@ -7,7 +7,7 @@
 -- ============================================================================
 
 USE ROLE SNOWFLAKE_INTELLIGENCE_ADMIN;
-USE DATABASE AUTOMATED_INTELLIGENCE;
+USE DATABASE DASH_AUTOMATED_INTELLIGENCE_DB;
 USE WAREHOUSE AUTOMATED_INTELLIGENCE_WH;
 
 -- ============================================================================
@@ -26,7 +26,7 @@ SELECT
     review_title,
     LEFT(review_text, 80) || '...' AS review_preview,
     AI_FILTER(PROMPT('The reviewer is satisfied with this product: {0}', review_text)) AS is_satisfied
-FROM AUTOMATED_INTELLIGENCE.RAW.PRODUCT_REVIEWS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.PRODUCT_REVIEWS
 WHERE rating IN (1, 5)  -- Compare extremes
 ORDER BY rating
 LIMIT 10;
@@ -38,7 +38,7 @@ SELECT
     category,
     subject,
     AI_FILTER(PROMPT('This support ticket describes an urgent problem requiring immediate attention: {0}', description)) AS is_urgent
-FROM AUTOMATED_INTELLIGENCE.RAW.SUPPORT_TICKETS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.SUPPORT_TICKETS
 LIMIT 10;
 
 -- ============================================================================
@@ -51,7 +51,7 @@ SELECT
     rating,
     review_title,
     LEFT(review_text, 100) || '...' AS review_preview
-FROM AUTOMATED_INTELLIGENCE.RAW.PRODUCT_REVIEWS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.PRODUCT_REVIEWS
 WHERE AI_FILTER(PROMPT('The reviewer mentions product quality issues or defects: {0}', review_text))
 LIMIT 10;
 
@@ -62,7 +62,7 @@ SELECT
     category,
     subject,
     status
-FROM AUTOMATED_INTELLIGENCE.RAW.SUPPORT_TICKETS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.SUPPORT_TICKETS
 WHERE AI_FILTER(PROMPT('This ticket is about shipping delays or delivery problems: {0}', description))
 LIMIT 10;
 
@@ -78,7 +78,7 @@ SELECT
         PROMPT('Order total: ${0}', total_amount::VARCHAR),
         ARRAY_CONSTRUCT('budget_purchase', 'standard_purchase', 'premium_purchase', 'luxury_purchase')
     ) AS order_classification
-FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
 LIMIT 10;
 
 -- Classify support ticket sentiment
@@ -89,7 +89,7 @@ SELECT
         description,
         ARRAY_CONSTRUCT('frustrated', 'neutral', 'appreciative')
     ) AS customer_sentiment
-FROM AUTOMATED_INTELLIGENCE.RAW.SUPPORT_TICKETS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.SUPPORT_TICKETS
 LIMIT 10;
 
 -- ============================================================================
@@ -99,7 +99,7 @@ LIMIT 10;
 -- Uncomment to create - will incur Cortex AI costs on each refresh.
 
 /*
-CREATE OR REPLACE DYNAMIC TABLE AUTOMATED_INTELLIGENCE.DYNAMIC_TABLES.REVIEWS_WITH_SENTIMENT
+CREATE OR REPLACE DYNAMIC TABLE DASH_AUTOMATED_INTELLIGENCE_DB.DYNAMIC_TABLES.REVIEWS_WITH_SENTIMENT
 TARGET_LAG = '1 hour'
 WAREHOUSE = AUTOMATED_INTELLIGENCE_WH
 REFRESH_MODE = FULL
@@ -119,7 +119,7 @@ SELECT
         r.review_text,
         ARRAY_CONSTRUCT('highly_positive', 'positive', 'neutral', 'negative', 'highly_negative')
     ) AS sentiment_category
-FROM AUTOMATED_INTELLIGENCE.RAW.PRODUCT_REVIEWS r;
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.PRODUCT_REVIEWS r;
 */
 
 -- ============================================================================
@@ -142,7 +142,7 @@ SELECT
     review_id,
     review_title,
     AI_FILTER(PROMPT('Reviewer recommends this product: {0}', review_text)) AS recommends
-FROM AUTOMATED_INTELLIGENCE.RAW.PRODUCT_REVIEWS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.PRODUCT_REVIEWS
 WHERE review_text IS NOT NULL 
   AND LENGTH(review_text) > 10  -- Skip very short reviews
   AND rating >= 4  -- Pre-filter to likely positive reviews

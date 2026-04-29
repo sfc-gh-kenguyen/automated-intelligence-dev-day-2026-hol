@@ -13,19 +13,19 @@ def render_ingestion_dashboard(schema: str, orders_table: str, order_items_table
         # All-time totals (same as Summary page)
         col1, col2, col3, col4, col5 = st.columns(5)
 
-        alltime_orders_result = session.sql(f"SELECT COUNT(*) as cnt FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table}").collect()
+        alltime_orders_result = session.sql(f"SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}").collect()
         alltime_orders = alltime_orders_result[0]['CNT'] if alltime_orders_result else 0
 
-        alltime_items_result = session.sql(f"SELECT COUNT(*) as cnt FROM AUTOMATED_INTELLIGENCE.{schema}.{order_items_table}").collect()
+        alltime_items_result = session.sql(f"SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table}").collect()
         alltime_items = alltime_items_result[0]['CNT'] if alltime_items_result else 0
 
-        alltime_customers_result = session.sql("SELECT COUNT(*) as cnt FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS").collect()
+        alltime_customers_result = session.sql("SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS").collect()
         alltime_customers = alltime_customers_result[0]['CNT'] if alltime_customers_result else 0
 
-        alltime_revenue_result = session.sql(f"SELECT ROUND(SUM(total_amount), 2) as total_revenue FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table}").collect()
+        alltime_revenue_result = session.sql(f"SELECT ROUND(SUM(total_amount), 2) as total_revenue FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}").collect()
         alltime_revenue = alltime_revenue_result[0]['TOTAL_REVENUE'] if alltime_revenue_result and alltime_revenue_result[0]['TOTAL_REVENUE'] is not None else 0
 
-        alltime_products_result = session.sql(f"SELECT COUNT(DISTINCT product_id) as cnt FROM AUTOMATED_INTELLIGENCE.{schema}.{order_items_table}").collect()
+        alltime_products_result = session.sql(f"SELECT COUNT(DISTINCT product_id) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table}").collect()
         alltime_products = alltime_products_result[0]['CNT'] if alltime_products_result else 0
 
         col1.metric("Total Customers", format_number(alltime_customers, include_decimals=False))
@@ -41,7 +41,7 @@ def render_ingestion_dashboard(schema: str, orders_table: str, order_items_table
         st.markdown(f"#### Last {days} Days")
 
         orders_count_query = f"""
-        SELECT COUNT(*) as cnt FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table}
+        SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
         WHERE ORDER_DATE >= DATEADD('day', -{days}, CURRENT_TIMESTAMP())
         """
         orders_result = session.sql(orders_count_query).collect()
@@ -49,8 +49,8 @@ def render_ingestion_dashboard(schema: str, orders_table: str, order_items_table
         
         order_items_count_query = f"""
         SELECT COUNT(*) as cnt 
-        FROM AUTOMATED_INTELLIGENCE.{schema}.{order_items_table} oi
-        JOIN AUTOMATED_INTELLIGENCE.{schema}.{orders_table} o ON oi.order_id = o.order_id
+        FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table} oi
+        JOIN DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table} o ON oi.order_id = o.order_id
         WHERE o.ORDER_DATE >= DATEADD('day', -{days}, CURRENT_TIMESTAMP())
         """
         items_result = session.sql(order_items_count_query).collect()
@@ -66,7 +66,7 @@ def render_ingestion_dashboard(schema: str, orders_table: str, order_items_table
         SELECT 
             DATE_TRUNC('hour', ORDER_DATE) as hour,
             COUNT(*) as order_count
-        FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table}
+        FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
         WHERE ORDER_DATE >= DATEADD('day', -{days}, CURRENT_TIMESTAMP())
         GROUP BY DATE_TRUNC('hour', ORDER_DATE)
         ORDER BY hour
@@ -85,8 +85,8 @@ def render_ingestion_dashboard(schema: str, orders_table: str, order_items_table
             SELECT 
                 DATE_TRUNC('day', ORDER_DATE) as day,
                 COUNT(*) as order_count
-            FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table}
-            WHERE ORDER_DATE >= (SELECT MAX(ORDER_DATE) - INTERVAL '30 days' FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table})
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
+            WHERE ORDER_DATE >= (SELECT MAX(ORDER_DATE) - INTERVAL '30 days' FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table})
             GROUP BY DATE_TRUNC('day', ORDER_DATE)
             ORDER BY day
             """
@@ -105,7 +105,7 @@ def render_ingestion_dashboard(schema: str, orders_table: str, order_items_table
         SELECT 
             ORDER_STATUS,
             COUNT(*) as order_count
-        FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table}
+        FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
         WHERE ORDER_DATE >= DATEADD('day', -{days}, CURRENT_TIMESTAMP())
         GROUP BY ORDER_STATUS
         ORDER BY order_count DESC
@@ -118,7 +118,7 @@ def render_ingestion_dashboard(schema: str, orders_table: str, order_items_table
             SELECT 
                 ORDER_STATUS,
                 COUNT(*) as order_count
-            FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table}
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
             GROUP BY ORDER_STATUS
             ORDER BY order_count DESC
             """
@@ -147,8 +147,8 @@ def render_ingestion_dashboard(schema: str, orders_table: str, order_items_table
             END AS order_size,
             oi.product_category,
             SUM(oi.line_total) as revenue
-        FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table} o
-        JOIN AUTOMATED_INTELLIGENCE.{schema}.{order_items_table} oi ON o.order_id = oi.order_id
+        FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table} o
+        JOIN DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table} oi ON o.order_id = oi.order_id
         WHERE o.ORDER_DATE >= DATEADD('day', -{days}, CURRENT_TIMESTAMP())
         GROUP BY order_size, oi.product_category
         ORDER BY 
@@ -174,8 +174,8 @@ def render_ingestion_dashboard(schema: str, orders_table: str, order_items_table
                 END AS order_size,
                 oi.product_category,
                 SUM(oi.line_total) as revenue
-            FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table} o
-            JOIN AUTOMATED_INTELLIGENCE.{schema}.{order_items_table} oi ON o.order_id = oi.order_id
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table} o
+            JOIN DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table} oi ON o.order_id = oi.order_id
             GROUP BY order_size, oi.product_category
             ORDER BY 
                 CASE order_size

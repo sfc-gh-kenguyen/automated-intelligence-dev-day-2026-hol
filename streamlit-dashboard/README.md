@@ -65,7 +65,7 @@ A Streamlit dashboard that monitors Snowpipe Streaming ingestion and Interactive
 
 2. **Get app URL:**
    ```bash
-   snow streamlit get-url AUTOMATED_INTELLIGENCE.RAW.THE_DASHBOARD -c dash-builder-si
+   snow streamlit get-url DASH_AUTOMATED_INTELLIGENCE_DB.RAW.THE_DASHBOARD -c dash-builder-si
    ```
 
 ## Dashboard Tabs
@@ -115,10 +115,10 @@ End-to-end health monitoring:
 - **Auto-refresh**: Enabled for local development
 
 ### Connection
-The app uses standard Snowpark connection pattern with the `AUTOMATED_INTELLIGENCE` role:
+The app uses standard Snowpark connection pattern with the `AUTOMATED_INTELLIGENCE_ADMIN` role:
 - **Snowflake deployment**: `get_active_session()` (automatic)
 - **Local development**: `Session.builder.config('connection_name', 'default')`
-- **Role**: Uses `AUTOMATED_INTELLIGENCE` role for all queries
+- **Role**: Uses `AUTOMATED_INTELLIGENCE_ADMIN` role for all queries
 
 ## Use Cases
 
@@ -208,17 +208,17 @@ streamlit run streamlit_app.py --server.port 8502
 ```sql
 -- Check app status
 SHOW STREAMLITS;
-DESC STREAMLIT AUTOMATED_INTELLIGENCE.RAW.the_dashboard;
+DESC STREAMLIT DASH_AUTOMATED_INTELLIGENCE_DB.RAW.the_dashboard;
 
 -- Verify warehouse is set
-ALTER STREAMLIT AUTOMATED_INTELLIGENCE.RAW.the_dashboard 
+ALTER STREAMLIT DASH_AUTOMATED_INTELLIGENCE_DB.RAW.the_dashboard 
   SET QUERY_WAREHOUSE = AUTOMATED_INTELLIGENCE_WH;
 ```
 
 **Permission errors:**
 ```sql
 -- Grant necessary permissions
-GRANT USAGE ON DATABASE AUTOMATED_INTELLIGENCE TO ROLE <your_role>;
+GRANT USAGE ON DATABASE DASH_AUTOMATED_INTELLIGENCE_DB TO ROLE <your_role>;
 GRANT USAGE ON SCHEMA RAW, DYNAMIC_TABLES, INTERACTIVE TO ROLE <your_role>;
 GRANT SELECT ON ALL TABLES IN SCHEMA RAW TO ROLE <your_role>;
 GRANT SELECT ON ALL TABLES IN SCHEMA INTERACTIVE TO ROLE <your_role>;
@@ -227,7 +227,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA INTERACTIVE TO ROLE <your_role>;
 **Dynamic Tables query fails:**
 ```sql
 -- Requires MONITOR privilege
-GRANT MONITOR ON DATABASE AUTOMATED_INTELLIGENCE TO ROLE <your_role>;
+GRANT MONITOR ON DATABASE DASH_AUTOMATED_INTELLIGENCE_DB TO ROLE <your_role>;
 ```
 
 ## Files

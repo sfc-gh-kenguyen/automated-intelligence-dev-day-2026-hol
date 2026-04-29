@@ -73,7 +73,7 @@ class RealtimePipelineDemo:
         self.execute_query("USE WAREHOUSE automated_intelligence_wh", fetch=False)
         
         result = self.execute_query(
-            "SELECT MAX(order_id) as latest_order FROM automated_intelligence.raw.orders"
+            "SELECT MAX(order_id) as latest_order FROM dash_automated_intelligence_db.raw.orders"
         )
         latest_order_id = result[0][0]
         print(f"📊 Latest order_id: {latest_order_id}")
@@ -97,7 +97,7 @@ class RealtimePipelineDemo:
         while (time.time() - start_time) < timeout:
             result = self.execute_query(f"""
                 SELECT COUNT(*) 
-                FROM automated_intelligence.dynamic_tables.fact_orders
+                FROM dash_automated_intelligence_db.dynamic_tables.fact_orders
                 WHERE order_id = {latest_order_id}
             """)
             
@@ -130,7 +130,7 @@ class RealtimePipelineDemo:
         while (time.time() - start_time) < timeout:
             result = self.execute_query(f"""
                 SELECT COUNT(*) 
-                FROM automated_intelligence.interactive.order_lookup
+                FROM dash_automated_intelligence_db.interactive.order_lookup
                 WHERE order_id = {latest_order_id}
             """)
             
@@ -170,7 +170,7 @@ class RealtimePipelineDemo:
                     total_amount,
                     discount_percent,
                     shipping_cost
-                FROM automated_intelligence.interactive.order_lookup
+                FROM dash_automated_intelligence_db.interactive.order_lookup
                 WHERE order_id = {order_id}
             """)
             
@@ -223,14 +223,14 @@ class RealtimePipelineDemo:
                 COUNT(*) as row_count,
                 MAX(order_id) as max_order_id,
                 MAX(order_date) as latest_date
-            FROM automated_intelligence.raw.orders
+            FROM dash_automated_intelligence_db.raw.orders
             UNION ALL
             SELECT 
                 'Dynamic Tables (fact_orders)',
                 COUNT(*),
                 MAX(order_id),
                 MAX(order_date)
-            FROM automated_intelligence.dynamic_tables.fact_orders
+            FROM dash_automated_intelligence_db.dynamic_tables.fact_orders
         """)
         
         # Switch to interactive warehouse for interactive tables
@@ -241,7 +241,7 @@ class RealtimePipelineDemo:
                 COUNT(*) as row_count,
                 MAX(order_id) as max_order_id,
                 MAX(order_date) as latest_date
-            FROM automated_intelligence.interactive.order_lookup
+            FROM dash_automated_intelligence_db.interactive.order_lookup
         """)
         
         print(f"{'Layer':<40} {'Rows':>12} {'Max Order ID':>15} {'Latest Date':>20}")

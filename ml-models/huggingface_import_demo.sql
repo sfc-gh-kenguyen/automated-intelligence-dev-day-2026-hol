@@ -8,7 +8,7 @@
 -- ============================================================================
 
 USE ROLE SNOWFLAKE_INTELLIGENCE_ADMIN;
-USE DATABASE AUTOMATED_INTELLIGENCE;
+USE DATABASE DASH_AUTOMATED_INTELLIGENCE_DB;
 USE SCHEMA MODELS;
 USE WAREHOUSE AUTOMATED_INTELLIGENCE_WH;
 
@@ -16,14 +16,14 @@ USE WAREHOUSE AUTOMATED_INTELLIGENCE_WH;
 -- PART 1: Create Model Registry Schema
 -- ============================================================================
 
-CREATE SCHEMA IF NOT EXISTS AUTOMATED_INTELLIGENCE.MODELS;
+CREATE SCHEMA IF NOT EXISTS DASH_AUTOMATED_INTELLIGENCE_DB.MODELS;
 
 -- ============================================================================
 -- PART 2: Import Hugging Face Model (Python Procedure)
 -- ============================================================================
 
 -- Create a procedure to import HuggingFace models
-CREATE OR REPLACE PROCEDURE AUTOMATED_INTELLIGENCE.MODELS.import_huggingface_model(
+CREATE OR REPLACE PROCEDURE DASH_AUTOMATED_INTELLIGENCE_DB.MODELS.import_huggingface_model(
     model_name VARCHAR,
     hf_model_id VARCHAR,
     hf_token VARCHAR DEFAULT NULL
@@ -67,7 +67,7 @@ def import_model(session, model_name: str, hf_model_id: str, hf_token: str = Non
 $$;
 
 -- Example usage (uncomment to run):
--- CALL AUTOMATED_INTELLIGENCE.MODELS.import_huggingface_model(
+-- CALL DASH_AUTOMATED_INTELLIGENCE_DB.MODELS.import_huggingface_model(
 --     'sentiment_classifier',
 --     'distilbert-base-uncased-finetuned-sst-2-english'
 -- );
@@ -86,7 +86,7 @@ from snowflake.snowpark import Session
 session = Session.builder.configs(connection_params).create()
 
 # Create registry
-registry = Registry(session=session, database_name='AUTOMATED_INTELLIGENCE', schema_name='MODELS')
+registry = Registry(session=session, database_name='DASH_AUTOMATED_INTELLIGENCE_DB', schema_name='MODELS')
 
 # Import model from HuggingFace
 # Method 1: Using transformers
@@ -107,13 +107,13 @@ mv = registry.log_model(
 -- ============================================================================
 
 -- Show models in registry
-SHOW MODELS IN SCHEMA AUTOMATED_INTELLIGENCE.MODELS;
+SHOW MODELS IN SCHEMA DASH_AUTOMATED_INTELLIGENCE_DB.MODELS;
 
 -- Show model versions
-SHOW VERSIONS IN MODEL AUTOMATED_INTELLIGENCE.MODELS.sentiment_classifier;
+SHOW VERSIONS IN MODEL DASH_AUTOMATED_INTELLIGENCE_DB.MODELS.sentiment_classifier;
 
 -- Get model details
-DESCRIBE MODEL AUTOMATED_INTELLIGENCE.MODELS.sentiment_classifier;
+DESCRIBE MODEL DASH_AUTOMATED_INTELLIGENCE_DB.MODELS.sentiment_classifier;
 
 -- ============================================================================
 -- PART 5: Use Imported Model for Inference
@@ -122,7 +122,7 @@ DESCRIBE MODEL AUTOMATED_INTELLIGENCE.MODELS.sentiment_classifier;
 /*
 -- Create a UDF from the registered model
 
-CREATE OR REPLACE FUNCTION AUTOMATED_INTELLIGENCE.MODELS.predict_sentiment(text VARCHAR)
+CREATE OR REPLACE FUNCTION DASH_AUTOMATED_INTELLIGENCE_DB.MODELS.predict_sentiment(text VARCHAR)
 RETURNS VARIANT
 LANGUAGE PYTHON
 RUNTIME_VERSION = '3.10'
@@ -146,8 +146,8 @@ $$;
 -- Use the function
 SELECT 
     review_text,
-    AUTOMATED_INTELLIGENCE.MODELS.predict_sentiment(review_text) AS sentiment
-FROM AUTOMATED_INTELLIGENCE.RAW.PRODUCT_REVIEWS
+    DASH_AUTOMATED_INTELLIGENCE_DB.MODELS.predict_sentiment(review_text) AS sentiment
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.PRODUCT_REVIEWS
 LIMIT 10;
 */
 
@@ -188,12 +188,12 @@ RECOMMENDED MODELS:
 -- ============================================================================
 
 -- Add tags for governance
-ALTER MODEL AUTOMATED_INTELLIGENCE.MODELS.sentiment_classifier
+ALTER MODEL DASH_AUTOMATED_INTELLIGENCE_DB.MODELS.sentiment_classifier
 SET TAG governance.classification = 'ML_MODEL',
     governance.data_source = 'HUGGINGFACE';
 
 -- Grant access
-GRANT USAGE ON MODEL AUTOMATED_INTELLIGENCE.MODELS.sentiment_classifier
+GRANT USAGE ON MODEL DASH_AUTOMATED_INTELLIGENCE_DB.MODELS.sentiment_classifier
 TO ROLE DATA_SCIENTIST;
 
 -- ============================================================================

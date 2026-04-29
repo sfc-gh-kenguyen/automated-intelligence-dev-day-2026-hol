@@ -55,7 +55,7 @@ st.text("Records pending MERGE and UPDATE to production (raw) tables.")
 counts = {'orders_staging': 0, 'order_items_staging': 0, 'total_pending': 0}
 
 try:
-    result = session.sql("CALL AUTOMATED_INTELLIGENCE.staging.get_staging_counts()").collect()
+    result = session.sql("CALL DASH_AUTOMATED_INTELLIGENCE_DB.staging.get_staging_counts()").collect()
     counts_json = result[0][0]
     counts = json.loads(counts_json)
     
@@ -119,7 +119,7 @@ if run_both:
     # Create snapshot of discount values before any tests
     with st.spinner("Creating data snapshot for fair comparison..."):
         try:
-            session.sql("CALL AUTOMATED_INTELLIGENCE.staging.create_discount_snapshot()").collect()
+            session.sql("CALL DASH_AUTOMATED_INTELLIGENCE_DB.staging.create_discount_snapshot()").collect()
         except Exception as e:
             st.error(f"❌ Error creating snapshot: {str(e)}")
             st.session_state.merge_running = False
@@ -138,15 +138,15 @@ if run_both:
     with st.spinner("Running warmup round (not timed)..."):
         for label, warehouse in warehouses_to_test:
             try:
-                session.sql("CALL AUTOMATED_INTELLIGENCE.staging.restore_discount_snapshot()").collect()
+                session.sql("CALL DASH_AUTOMATED_INTELLIGENCE_DB.staging.restore_discount_snapshot()").collect()
                 session.sql(f"USE WAREHOUSE {warehouse}").collect()
                 
                 # Disable cache with retry logic (handles transient errors)
                 disable_query_cache_with_retry(session)
                 
                 # Run actual workload once to compile stored procedures
-                session.sql("CALL AUTOMATED_INTELLIGENCE.staging.merge_staging_to_raw()").collect()
-                session.sql("CALL AUTOMATED_INTELLIGENCE.staging.enrich_raw_data()").collect()
+                session.sql("CALL DASH_AUTOMATED_INTELLIGENCE_DB.staging.merge_staging_to_raw()").collect()
+                session.sql("CALL DASH_AUTOMATED_INTELLIGENCE_DB.staging.enrich_raw_data()").collect()
                 
                 st.info(f"✅ {label} warmup complete (stored procedures compiled)")
             except Exception as e:
@@ -157,7 +157,7 @@ if run_both:
         with st.spinner(f"Running timed test with {label}..."):
             try:
                 # Restore snapshot before each test
-                session.sql("CALL AUTOMATED_INTELLIGENCE.staging.restore_discount_snapshot()").collect()
+                session.sql("CALL DASH_AUTOMATED_INTELLIGENCE_DB.staging.restore_discount_snapshot()").collect()
                 
                 # Set warehouse for this session
                 session.sql(f"USE WAREHOUSE {warehouse}").collect()
@@ -168,7 +168,7 @@ if run_both:
                 # Run MERGE
                 merge_start = time.time()
                 merge_result = session.sql(
-                    f"CALL AUTOMATED_INTELLIGENCE.staging.merge_staging_to_raw()"
+                    f"CALL DASH_AUTOMATED_INTELLIGENCE_DB.staging.merge_staging_to_raw()"
                 ).collect()
                 merge_duration = time.time() - merge_start
                 
@@ -178,7 +178,7 @@ if run_both:
                 # Run UPDATE enrichment
                 update_start = time.time()
                 update_result = session.sql(
-                    f"CALL AUTOMATED_INTELLIGENCE.staging.enrich_raw_data()"
+                    f"CALL DASH_AUTOMATED_INTELLIGENCE_DB.staging.enrich_raw_data()"
                 ).collect()
                 update_duration = time.time() - update_start
                 
@@ -199,7 +199,7 @@ if run_both:
     # Truncate staging tables after successful MERGE
     if st.session_state.pipeline_results and not any('error' in r for r in st.session_state.pipeline_results.values()):
         try:
-            session.sql("CALL AUTOMATED_INTELLIGENCE.staging.truncate_staging_tables()").collect()
+            session.sql("CALL DASH_AUTOMATED_INTELLIGENCE_DB.staging.truncate_staging_tables()").collect()
         except Exception as e:
             st.warning(f"⚠️ Failed to truncate staging tables: {str(e)}")
     

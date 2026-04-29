@@ -6,7 +6,7 @@
 -- Duration: 5-7 minutes
 -- ============================================================================
 
-USE ROLE AUTOMATED_INTELLIGENCE;
+USE ROLE AUTOMATED_INTELLIGENCE_ADMIN;
 
 -- ============================================================================
 -- PART 1: Baseline - Query Standard Tables
@@ -32,7 +32,7 @@ SELECT
   order_date,
   order_status,
   total_amount
-FROM automated_intelligence.raw.orders
+FROM dash_automated_intelligence_db.raw.orders
 WHERE customer_id = 5000
 ORDER BY order_date DESC
 LIMIT 20;
@@ -54,7 +54,7 @@ SELECT
   total_amount,
   discount_percent,
   shipping_cost
-FROM automated_intelligence.raw.orders
+FROM dash_automated_intelligence_db.raw.orders
 WHERE order_id = 15000
 LIMIT 1;
 
@@ -86,7 +86,7 @@ SELECT
   order_date,
   order_status,
   total_amount
-FROM automated_intelligence.interactive.customer_order_analytics
+FROM dash_automated_intelligence_db.interactive.customer_order_analytics
 WHERE customer_id = 5000
 ORDER BY order_date DESC
 LIMIT 20;
@@ -108,7 +108,7 @@ SELECT
   total_amount,
   discount_percent,
   shipping_cost
-FROM automated_intelligence.interactive.order_lookup
+FROM dash_automated_intelligence_db.interactive.order_lookup
 WHERE order_id = 15000
 LIMIT 1;
 
@@ -130,17 +130,17 @@ UNION ALL SELECT '╚═══════════════════�
 
 -- Query different customers (demonstrates consistent performance)
 SELECT customer_id, COUNT(*) as order_count, SUM(total_amount) as total_spent
-FROM automated_intelligence.interactive.customer_order_analytics
+FROM dash_automated_intelligence_db.interactive.customer_order_analytics
 WHERE customer_id = 5001
 GROUP BY customer_id;
 
 SELECT customer_id, COUNT(*) as order_count, SUM(total_amount) as total_spent
-FROM automated_intelligence.interactive.customer_order_analytics
+FROM dash_automated_intelligence_db.interactive.customer_order_analytics
 WHERE customer_id = 5002
 GROUP BY customer_id;
 
 SELECT customer_id, COUNT(*) as order_count, SUM(total_amount) as total_spent
-FROM automated_intelligence.interactive.customer_order_analytics
+FROM dash_automated_intelligence_db.interactive.customer_order_analytics
 WHERE customer_id = 5003
 GROUP BY customer_id;
 
@@ -243,7 +243,7 @@ SELECT
   order_id,
   order_status,
   total_amount
-FROM automated_intelligence.interactive.customer_order_analytics
+FROM dash_automated_intelligence_db.interactive.customer_order_analytics
 WHERE customer_id = 5000
   AND order_date >= DATEADD('day', -30, CURRENT_DATE())
 ORDER BY order_date DESC;
@@ -253,7 +253,7 @@ SELECT
   order_status,
   COUNT(*) as order_count,
   SUM(total_amount) as total_revenue
-FROM automated_intelligence.interactive.order_lookup
+FROM dash_automated_intelligence_db.interactive.order_lookup
 WHERE order_date >= CURRENT_DATE() - 7
 GROUP BY order_status
 ORDER BY order_count DESC;
@@ -264,7 +264,7 @@ SELECT
   customer_id,
   order_date,
   total_amount
-FROM automated_intelligence.interactive.order_lookup
+FROM dash_automated_intelligence_db.interactive.order_lookup
 WHERE total_amount > 500
   AND order_date >= CURRENT_DATE() - 30
 ORDER BY total_amount DESC

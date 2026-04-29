@@ -11,7 +11,7 @@
 -- ============================================================================
 
 USE ROLE SNOWFLAKE_INTELLIGENCE_ADMIN;
-USE DATABASE AUTOMATED_INTELLIGENCE;
+USE DATABASE DASH_AUTOMATED_INTELLIGENCE_DB;
 USE WAREHOUSE AUTOMATED_INTELLIGENCE_WH;
 
 -- ============================================================================
@@ -19,12 +19,12 @@ USE WAREHOUSE AUTOMATED_INTELLIGENCE_WH;
 -- ============================================================================
 
 -- Create schema for Iceberg tables
-CREATE SCHEMA IF NOT EXISTS AUTOMATED_INTELLIGENCE.ICEBERG;
+CREATE SCHEMA IF NOT EXISTS DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG;
 
 -- Create Iceberg table with date partitioning
 -- Note: Requires external volume and catalog integration for external Iceberg
 -- This example shows managed Iceberg table (Snowflake-managed)
-CREATE OR REPLACE ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_PARTITIONED
+CREATE OR REPLACE ICEBERG TABLE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_PARTITIONED
     CLUSTER BY (order_year, order_month)
     CATALOG = 'SNOWFLAKE'
     EXTERNAL_VOLUME = 'my_iceberg_volume'  -- Replace with actual volume
@@ -38,11 +38,11 @@ SELECT
     MONTH(order_date) AS order_month,
     total_amount,
     order_status
-FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
 LIMIT 1000;
 
 -- Alternative: Managed Iceberg Table (Snowflake handles storage)
-CREATE OR REPLACE ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_MANAGED
+CREATE OR REPLACE ICEBERG TABLE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_MANAGED
     CATALOG = 'SNOWFLAKE'
     CLUSTER BY (YEAR(order_date), MONTH(order_date))
 AS
@@ -52,7 +52,7 @@ SELECT
     order_date,
     total_amount,
     order_status
-FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
 LIMIT 1000;
 
 -- ============================================================================
@@ -60,14 +60,14 @@ LIMIT 1000;
 -- ============================================================================
 
 -- Check table properties
-DESCRIBE TABLE AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_PARTITIONED;
+DESCRIBE TABLE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_PARTITIONED;
 
 -- View Iceberg metadata
-SHOW ICEBERG TABLES IN SCHEMA AUTOMATED_INTELLIGENCE.ICEBERG;
+SHOW ICEBERG TABLES IN SCHEMA DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG;
 
 -- Check clustering information
 SELECT SYSTEM$CLUSTERING_INFORMATION(
-    'AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_PARTITIONED',
+    'DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_PARTITIONED',
     '(order_year, order_month)'
 );
 
@@ -76,7 +76,7 @@ SELECT SYSTEM$CLUSTERING_INFORMATION(
 -- ============================================================================
 
 -- Insert new data - Snowflake optimizes writes based on CLUSTER BY
-INSERT INTO AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_PARTITIONED
+INSERT INTO DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_PARTITIONED
 SELECT 
     order_id,
     customer_id,
@@ -85,7 +85,7 @@ SELECT
     MONTH(order_date) AS order_month,
     total_amount,
     order_status
-FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
 WHERE order_date >= '2025-01-01'
 LIMIT 500;
 
@@ -100,7 +100,7 @@ SELECT
     order_month,
     COUNT(*) AS order_count,
     SUM(total_amount) AS revenue
-FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_PARTITIONED
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_PARTITIONED
 WHERE order_year = 2025 AND order_month = 1
 GROUP BY order_year, order_month;
 
@@ -112,11 +112,11 @@ GROUP BY order_year, order_month;
 -- ============================================================================
 
 -- Option 1: CREATE TABLE AS SELECT
-CREATE OR REPLACE ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.CUSTOMERS_ICEBERG
+CREATE OR REPLACE ICEBERG TABLE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.CUSTOMERS_ICEBERG
     CATALOG = 'SNOWFLAKE'
     CLUSTER BY (customer_segment, state)
 AS
-SELECT * FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS;
+SELECT * FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS;
 
 -- Option 2: ALTER TABLE (convert in place)
 -- ALTER TABLE my_table CONVERT TO ICEBERG
@@ -127,11 +127,11 @@ SELECT * FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS;
 -- ============================================================================
 
 -- Iceberg tables support time travel via snapshots
-SELECT * FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_PARTITIONED
+SELECT * FROM DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_PARTITIONED
 AT (TIMESTAMP => '2025-02-01 12:00:00'::TIMESTAMP);
 
 -- View snapshot history
-SELECT * FROM TABLE(AUTOMATED_INTELLIGENCE.INFORMATION_SCHEMA.ICEBERG_TABLE_SNAPSHOT_HISTORY(
+SELECT * FROM TABLE(DASH_AUTOMATED_INTELLIGENCE_DB.INFORMATION_SCHEMA.ICEBERG_TABLE_SNAPSHOT_HISTORY(
     TABLE_NAME => 'ORDERS_PARTITIONED'
 ))
 ORDER BY COMMITTED_AT DESC
@@ -174,7 +174,7 @@ LIMIT 10;
 
 -- Read existing Iceberg table from external storage
 /*
-CREATE OR REPLACE ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.EXTERNAL_ORDERS
+CREATE OR REPLACE ICEBERG TABLE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.EXTERNAL_ORDERS
     EXTERNAL_VOLUME = 'my_s3_volume'
     CATALOG = 'SNOWFLAKE'
     BASE_LOCATION = 's3://my-bucket/iceberg/orders/'
@@ -205,7 +205,7 @@ CREATE OR REPLACE ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.EXTERNAL_ORDERS
 -- Setting FORMAT_VERSION = 3 creates a v3 table with deletion vectors
 -- and row lineage enabled automatically.
 
-CREATE OR REPLACE ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+CREATE OR REPLACE ICEBERG TABLE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
     CATALOG = 'SNOWFLAKE'
     EXTERNAL_VOLUME = 'my_iceberg_volume'  -- Replace with actual volume
     BASE_LOCATION = 'orders_v3/'
@@ -217,15 +217,15 @@ SELECT
     order_date,
     total_amount,
     order_status
-FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
 LIMIT 500;
 
 -- Verify the table was created as v3
-DESCRIBE ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3;
+DESCRIBE ICEBERG TABLE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3;
 
 -- Check row count after initial load
 SELECT COUNT(*) AS initial_row_count
-FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3;
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3;
 
 -- ============================================================================
 -- PART 10: Deletion Vectors (Merge-on-Read)
@@ -236,28 +236,28 @@ FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3;
 -- This dramatically reduces write amplification for update-heavy workloads.
 
 -- UPDATE: marks old row values via deletion vector, writes new values
-UPDATE AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+UPDATE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
 SET    order_status = 'UPDATED_V3',
        total_amount = total_amount * 1.10
 WHERE  order_id IN (
     SELECT order_id
-    FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
     LIMIT 10
 );
 
 -- DELETE: writes a deletion vector instead of rewriting the data file
-DELETE FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+DELETE FROM DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
 WHERE  order_status = 'CANCELLED'
 AND    order_id IN (
     SELECT order_id
-    FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
     WHERE order_status = 'CANCELLED'
     LIMIT 5
 );
 
 -- MERGE: benefits most from deletion vectors — mixed insert/update/delete
 -- operations generate small Puffin files instead of full file rewrites
-MERGE INTO AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3 AS target
+MERGE INTO DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3 AS target
 USING (
     SELECT
         order_id,
@@ -265,7 +265,7 @@ USING (
         order_date,
         total_amount * 1.05 AS total_amount,
         'MERGED_V3' AS order_status
-    FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
     LIMIT 20
 ) AS source
 ON target.order_id = source.order_id
@@ -280,7 +280,7 @@ WHEN NOT MATCHED THEN
 
 -- Verify the results of deletion-vector-backed operations
 SELECT order_status, COUNT(*) AS cnt
-FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
 GROUP BY order_status
 ORDER BY cnt DESC;
 
@@ -301,7 +301,7 @@ SELECT
     total_amount,
     _row_id,
     _last_updated_sequence_number
-FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
 ORDER BY _last_updated_sequence_number DESC, _row_id
 LIMIT 20;
 
@@ -312,7 +312,7 @@ SELECT
     order_status,
     _row_id,
     _last_updated_sequence_number
-FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
 WHERE _last_updated_sequence_number > 1
 ORDER BY _last_updated_sequence_number, _row_id;
 
@@ -320,7 +320,7 @@ ORDER BY _last_updated_sequence_number, _row_id;
 SELECT
     _last_updated_sequence_number AS commit_seq,
     COUNT(*)                      AS rows_touched
-FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
 GROUP BY _last_updated_sequence_number
 ORDER BY commit_seq;
 
@@ -331,11 +331,11 @@ ORDER BY commit_seq;
 -- When a new column is added with a DEFAULT, existing rows return the
 -- default without a backfill rewrite.
 
-ALTER ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+ALTER ICEBERG TABLE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
     ADD COLUMN priority VARCHAR DEFAULT 'STANDARD';
 
 -- New inserts pick up the default automatically
-INSERT INTO AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+INSERT INTO DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
     (order_id, customer_id, order_date, total_amount, order_status)
 VALUES
     (999901, 'CUST_V3_A', CURRENT_DATE, 150.00, 'NEW'),
@@ -343,7 +343,7 @@ VALUES
 
 -- Existing rows return the default; new rows show explicit or default value
 SELECT order_id, order_status, priority
-FROM AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3
 WHERE order_id >= 999901
    OR priority IS NOT NULL
 ORDER BY order_id DESC
@@ -355,7 +355,7 @@ LIMIT 10;
 -- ⚠️  Only upgrade tables that are NOT consumed by v2-only readers (e.g. pg_lake).
 -- The upgrade is atomic and does not rewrite data files.
 /*
-ALTER ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_PARTITIONED
+ALTER ICEBERG TABLE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_PARTITIONED
     SET FORMAT_VERSION = 3;
 */
 
@@ -367,7 +367,7 @@ ALTER ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_PARTITIONED
 -- Also: table/column descriptions propagate from external catalogs (GA Apr 2026).
 
 -- Dynamic Iceberg table with partitioning and file size control
-CREATE OR REPLACE DYNAMIC ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.DAILY_ORDERS_ICEBERG
+CREATE OR REPLACE DYNAMIC ICEBERG TABLE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.DAILY_ORDERS_ICEBERG
     CATALOG = 'SNOWFLAKE'
     EXTERNAL_VOLUME = 'my_iceberg_volume'  -- Replace with actual volume
     BASE_LOCATION = 'daily_orders_dynamic/'
@@ -384,12 +384,12 @@ SELECT
     MONTH(order_date) AS order_month,
     total_amount,
     order_status
-FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS;
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS;
 
 -- Dynamic Iceberg table with PATH_LAYOUT for Hive-compatible partition paths
 -- (enables direct reads from Spark/Trino/Presto without metadata catalog)
 /*
-CREATE OR REPLACE DYNAMIC ICEBERG TABLE AUTOMATED_INTELLIGENCE.ICEBERG.HIVE_COMPAT_ORDERS
+CREATE OR REPLACE DYNAMIC ICEBERG TABLE DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.HIVE_COMPAT_ORDERS
     CATALOG = 'SNOWFLAKE'
     EXTERNAL_VOLUME = 'my_iceberg_volume'
     BASE_LOCATION = 'hive_orders/'
@@ -406,7 +406,7 @@ SELECT
     YEAR(order_date) AS order_year,
     MONTH(order_date) AS order_month,
     total_amount
-FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS;
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS;
 */
 
 
@@ -415,7 +415,7 @@ FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS;
 -- ============================================================================
 
 -- Drop the v3 demo table (optional — uncomment to clean up)
--- DROP ICEBERG TABLE IF EXISTS AUTOMATED_INTELLIGENCE.ICEBERG.ORDERS_V3;
+-- DROP ICEBERG TABLE IF EXISTS DASH_AUTOMATED_INTELLIGENCE_DB.ICEBERG.ORDERS_V3;
 
 -- ---------------------------------------------------------------------------
 -- Compatibility matrix (as of April 2026):

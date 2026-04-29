@@ -6,7 +6,7 @@
 -- ============================================================================
 
 USE ROLE SNOWFLAKE_INTELLIGENCE_ADMIN;
-USE DATABASE AUTOMATED_INTELLIGENCE;
+USE DATABASE DASH_AUTOMATED_INTELLIGENCE_DB;
 USE WAREHOUSE AUTOMATED_INTELLIGENCE_WH;
 
 -- ============================================================================
@@ -49,7 +49,7 @@ WITH online_orders AS (
         order_date,
         total_amount,
         'online' AS source
-    FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
     WHERE total_amount > 300
     LIMIT 3
 ),
@@ -77,7 +77,7 @@ SELECT
     first_name,
     last_name,
     state
-FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS
 WHERE customer_segment = 'Premium'
 LIMIT 3
 
@@ -91,7 +91,7 @@ SELECT
     state,
     customer_segment,  -- New column
     registration_date   -- New column
-FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS
 WHERE customer_segment = 'Basic'
 LIMIT 3;
 
@@ -119,7 +119,7 @@ WITH orders_summary AS (
         'orders' AS table_name,
         COUNT(*) AS record_count,
         SUM(total_amount) AS total_value
-    FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
 ),
 customers_summary AS (
     SELECT 
@@ -127,7 +127,7 @@ customers_summary AS (
         COUNT(*) AS record_count,
         NULL::NUMBER AS total_value,  -- Different metrics
         COUNT(DISTINCT state) AS unique_states
-    FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS
 ),
 products_summary AS (
     SELECT 
@@ -135,7 +135,7 @@ products_summary AS (
         COUNT(*) AS record_count,
         SUM(price) AS total_value,
         COUNT(DISTINCT category) AS unique_categories
-    FROM AUTOMATED_INTELLIGENCE.RAW.PRODUCT_CATALOG
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.PRODUCT_CATALOG
 )
 SELECT * FROM orders_summary
 UNION ALL BY NAME

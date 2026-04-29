@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw
-    database: automated_intelligence
+    database: dash_automated_intelligence_db
     schema: raw
     description: "Raw operational data from Snowpipe Streaming"
     tables:

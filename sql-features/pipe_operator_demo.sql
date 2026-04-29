@@ -12,7 +12,7 @@
 -- ============================================================================
 
 USE ROLE SNOWFLAKE_INTELLIGENCE_ADMIN;
-USE DATABASE AUTOMATED_INTELLIGENCE;
+USE DATABASE DASH_AUTOMATED_INTELLIGENCE_DB;
 USE WAREHOUSE AUTOMATED_INTELLIGENCE_WH;
 
 -- ============================================================================
@@ -20,7 +20,7 @@ USE WAREHOUSE AUTOMATED_INTELLIGENCE_WH;
 -- ============================================================================
 
 -- Query SHOW command output without RESULT_SCAN
-SHOW TABLES IN AUTOMATED_INTELLIGENCE.RAW
+SHOW TABLES IN DASH_AUTOMATED_INTELLIGENCE_DB.RAW
 ->> SELECT "name" AS table_name, "rows" AS row_count, "bytes" AS size_bytes 
     FROM $1
     ORDER BY "bytes" DESC;
@@ -29,10 +29,10 @@ SHOW TABLES IN AUTOMATED_INTELLIGENCE.RAW
 SHOW WAREHOUSES
 ->> SELECT "name" AS warehouse_name, "state" AS status, "type" AS wh_type, "size" AS wh_size
     FROM $1
-    WHERE "name" LIKE 'AUTOMATED_INTELLIGENCE%';
+    WHERE "name" LIKE 'DASH_AUTOMATED_INTELLIGENCE_DB%';
 
 -- List schemas with filtering
-SHOW SCHEMAS IN DATABASE AUTOMATED_INTELLIGENCE
+SHOW SCHEMAS IN DATABASE DASH_AUTOMATED_INTELLIGENCE_DB
 ->> SELECT "name" AS schema_name, "owner" AS schema_owner
     FROM $1
     WHERE "name" NOT LIKE 'DBT%';
@@ -42,12 +42,12 @@ SHOW SCHEMAS IN DATABASE AUTOMATED_INTELLIGENCE
 -- ============================================================================
 
 -- Chain SELECT statements with transformation
-SELECT * FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS WHERE state = 'CO'
+SELECT * FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS WHERE state = 'CO'
 ->> SELECT customer_id, first_name, last_name, customer_segment FROM $1
 ->> SELECT COUNT(*) AS colorado_customer_count FROM $1;
 
 -- Reference results from multiple previous statements
-SELECT order_id, customer_id, total_amount FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS WHERE total_amount > 500 LIMIT 100
+SELECT order_id, customer_id, total_amount FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS WHERE total_amount > 500 LIMIT 100
 ->> SELECT AVG(total_amount) AS avg_amount, MIN(total_amount) AS min_amount, MAX(total_amount) AS max_amount FROM $1
 ->> SELECT 'High-value orders (>$500) stats' AS metric_type, * FROM $1;
 
@@ -75,8 +75,8 @@ CREATE OR REPLACE TEMP TABLE pipe_demo_temp (id INT, value VARCHAR)
 -- Chain with joins (note: regular joins are usually more performant)
 SELECT DISTINCT deptno FROM (SELECT 30 AS deptno) dept_demo WHERE deptno = 30
 ->> SELECT o.order_id, o.total_amount, c.first_name, c.customer_segment
-    FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS o
-    JOIN AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS c ON o.customer_id = c.customer_id
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS o
+    JOIN DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS c ON o.customer_id = c.customer_id
     WHERE c.customer_segment = 'Premium'
     LIMIT 5;
 
@@ -85,7 +85,7 @@ SELECT DISTINCT deptno FROM (SELECT 30 AS deptno) dept_demo WHERE deptno = 30
 -- ============================================================================
 
 -- Common pattern: Get table stats for multiple tables
-SHOW TABLES IN AUTOMATED_INTELLIGENCE.DYNAMIC_TABLES
+SHOW TABLES IN DASH_AUTOMATED_INTELLIGENCE_DB.DYNAMIC_TABLES
 ->> SELECT 
        "name" AS table_name,
        "rows" AS row_count,
@@ -95,7 +95,7 @@ SHOW TABLES IN AUTOMATED_INTELLIGENCE.DYNAMIC_TABLES
     ORDER BY "rows" DESC;
 
 -- Check column details for specific tables
-DESCRIBE TABLE AUTOMATED_INTELLIGENCE.RAW.ORDERS
+DESCRIBE TABLE DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
 ->> SELECT "name" AS column_name, "type" AS data_type, "null?" AS nullable
     FROM $1;
 
@@ -140,11 +140,11 @@ CALL my_procedure(param1, param2)
 -- ============================================================================
 
 -- OLD (without pipe operator):
--- SHOW TABLES IN AUTOMATED_INTELLIGENCE.RAW;
+-- SHOW TABLES IN DASH_AUTOMATED_INTELLIGENCE_DB.RAW;
 -- SELECT "name", "rows" FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
 
 -- NEW (with pipe operator):
-SHOW TABLES IN AUTOMATED_INTELLIGENCE.RAW
+SHOW TABLES IN DASH_AUTOMATED_INTELLIGENCE_DB.RAW
 ->> SELECT "name", "rows" FROM $1;
 
 -- ============================================================================

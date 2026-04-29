@@ -8,7 +8,7 @@ tables:
       - customer info
     description: Customer profiles with demographic information and segmentation
     base_table:
-      database: AUTOMATED_INTELLIGENCE
+      database: DASH_AUTOMATED_INTELLIGENCE_DB
       schema: RAW
       table: CUSTOMERS
     dimensions:
@@ -71,7 +71,7 @@ tables:
       - lifetime value
     description: DBT-generated customer lifetime value analysis with RFM segmentation and value tiers
     base_table:
-      database: AUTOMATED_INTELLIGENCE
+      database: DASH_AUTOMATED_INTELLIGENCE_DB
       schema: DBT_ANALYTICS
       table: CUSTOMER_LIFETIME_VALUE
     dimensions:
@@ -250,7 +250,7 @@ tables:
       - segmentation
     description: DBT-generated customer segmentation with behavioral analysis and recommended actions
     base_table:
-      database: AUTOMATED_INTELLIGENCE
+      database: DASH_AUTOMATED_INTELLIGENCE_DB
       schema: DBT_ANALYTICS
       table: CUSTOMER_SEGMENTATION
     dimensions:
@@ -361,7 +361,7 @@ tables:
       - daily metrics
     description: Pre-aggregated daily business metrics with automatic refresh
     base_table:
-      database: AUTOMATED_INTELLIGENCE
+      database: DASH_AUTOMATED_INTELLIGENCE_DB
       schema: DYNAMIC_TABLES
       table: DAILY_BUSINESS_METRICS
     dimensions:
@@ -591,7 +591,7 @@ tables:
       - transactions
     description: Individual order transactions with pricing and discount details
     base_table:
-      database: AUTOMATED_INTELLIGENCE
+      database: DASH_AUTOMATED_INTELLIGENCE_DB
       schema: RAW
       table: ORDERS
     dimensions:
@@ -741,7 +741,7 @@ tables:
       - product recommendations
     description: DBT-generated product affinity analysis showing which products are frequently purchased together
     base_table:
-      database: AUTOMATED_INTELLIGENCE
+      database: DASH_AUTOMATED_INTELLIGENCE_DB
       schema: DBT_ANALYTICS
       table: PRODUCT_AFFINITY
     dimensions:
@@ -834,7 +834,7 @@ tables:
       - products
     description: Product catalog with winter sports equipment details
     base_table:
-      database: AUTOMATED_INTELLIGENCE
+      database: DASH_AUTOMATED_INTELLIGENCE_DB
       schema: RAW
       table: PRODUCT_CATALOG
     dimensions:
@@ -925,7 +925,7 @@ verified_queries:
         order_date_only,
         total_net_revenue as total_revenue,
         total_net_revenue as net_revenue
-      FROM automated_intelligence.dynamic_tables.daily_business_metrics
+      FROM dash_automated_intelligence_db.dynamic_tables.daily_business_metrics
       WHERE order_date_only >= DATEADD('day', -7, CURRENT_DATE())
       ORDER BY order_date_only
     verified_at: 1733702400
@@ -937,7 +937,7 @@ verified_queries:
       SELECT 
         order_date_only,
         total_net_revenue as total_revenue
-      FROM automated_intelligence.dynamic_tables.daily_business_metrics
+      FROM dash_automated_intelligence_db.dynamic_tables.daily_business_metrics
       WHERE order_year = YEAR(CURRENT_DATE())
         AND order_month = MONTH(CURRENT_DATE())
       ORDER BY total_net_revenue DESC
@@ -956,7 +956,7 @@ verified_queries:
         SUM(total_net_revenue) as total_revenue,
         COUNT(*) as num_days,
         AVG(total_net_revenue) as avg_daily_revenue
-      FROM automated_intelligence.dynamic_tables.daily_business_metrics
+      FROM dash_automated_intelligence_db.dynamic_tables.daily_business_metrics
       WHERE order_date_only >= DATEADD('day', -30, CURRENT_DATE())
       GROUP BY period_type
     verified_at: 1733702400
@@ -968,7 +968,7 @@ verified_queries:
                SUM(total_amount * (discount_percent / 100)) as total_discounts_given,                                                                      
                SUM(total_amount * (1 - discount_percent / 100)) as net_revenue,                                                                            
                SUM(total_amount) as gross_revenue                                                                                                          
-             FROM automated_intelligence.raw.orders                                                                                                        
+             FROM dash_automated_intelligence_db.raw.orders                                                                                                        
              WHERE order_date >= DATEADD('day', -30, CURRENT_DATE())                                                                                       
                AND discount_percent IS NOT NULL    
     use_as_onboarding_question: false
@@ -982,8 +982,8 @@ verified_queries:
         SUM(o.total_amount * (1 - o.discount_percent / 100) + o.shipping_cost) as total_revenue,
         COUNT(DISTINCT o.order_id) as total_orders,
         AVG(o.total_amount * (1 - o.discount_percent / 100) + o.shipping_cost) as avg_order_value
-      FROM automated_intelligence.raw.orders o
-      JOIN automated_intelligence.raw.customers c ON o.customer_id = c.customer_id
+      FROM dash_automated_intelligence_db.raw.orders o
+      JOIN dash_automated_intelligence_db.raw.customers c ON o.customer_id = c.customer_id
       WHERE o.order_date >= DATEADD('day', -30, CURRENT_DATE())
       GROUP BY c.customer_segment
     verified_at: 1733702400
@@ -996,7 +996,7 @@ verified_queries:
         SUM(total_net_revenue) as total_revenue,
         AVG(total_orders) as avg_orders_per_day,
         AVG(avg_order_value) as avg_order_value
-      FROM automated_intelligence.dynamic_tables.daily_business_metrics
+      FROM dash_automated_intelligence_db.dynamic_tables.daily_business_metrics
       WHERE order_date_only >= DATEADD('day', -90, CURRENT_DATE())
       GROUP BY order_day_name
       ORDER BY total_revenue DESC
@@ -1010,7 +1010,7 @@ verified_queries:
         large_orders,
         extra_large_orders,
         total_orders
-      FROM automated_intelligence.dynamic_tables.daily_business_metrics
+      FROM dash_automated_intelligence_db.dynamic_tables.daily_business_metrics
       WHERE order_date_only >= DATEADD('day', -30, CURRENT_DATE())
       ORDER BY order_date_only
     verified_at: 1733702400
@@ -1025,7 +1025,7 @@ verified_queries:
         large_orders,
         extra_large_orders,
         total_orders
-      FROM automated_intelligence.dynamic_tables.daily_business_metrics
+      FROM dash_automated_intelligence_db.dynamic_tables.daily_business_metrics
       WHERE order_date_only >= DATEADD('day', -30, CURRENT_DATE())
       ORDER BY order_date_only
     verified_at: 1733702400
@@ -1040,7 +1040,7 @@ verified_queries:
         AVG(total_revenue) as avg_revenue_per_customer,
         AVG(total_orders) as avg_orders_per_customer,
         AVG(rfm_score) as avg_rfm_score
-      FROM automated_intelligence.dbt_analytics.customer_lifetime_value
+      FROM dash_automated_intelligence_db.dbt_analytics.customer_lifetime_value
       GROUP BY value_tier
       ORDER BY 
         CASE value_tier
@@ -1062,7 +1062,7 @@ verified_queries:
         total_orders,
         days_since_last_order,
         estimated_annual_value
-      FROM automated_intelligence.dbt_analytics.customer_lifetime_value
+      FROM dash_automated_intelligence_db.dbt_analytics.customer_lifetime_value
       WHERE customer_status = 'At Risk'
         AND value_tier IN ('VIP', 'High-Value')
       ORDER BY estimated_annual_value DESC
@@ -1079,7 +1079,7 @@ verified_queries:
         SUM(total_revenue) as segment_revenue,
         AVG(rfm_score) as avg_rfm_score,
         segment_priority
-      FROM automated_intelligence.dbt_analytics.customer_segmentation
+      FROM dash_automated_intelligence_db.dbt_analytics.customer_segmentation
       GROUP BY behavioral_segment, recommended_action, segment_priority
       ORDER BY segment_priority, num_customers DESC
     verified_at: 1735862400
@@ -1094,7 +1094,7 @@ verified_queries:
         confidence_a_to_b,
         lift,
         affinity_strength
-      FROM automated_intelligence.dbt_analytics.product_affinity
+      FROM dash_automated_intelligence_db.dbt_analytics.product_affinity
       WHERE affinity_strength IN ('Very Strong', 'Strong')
       ORDER BY times_bought_together DESC
       LIMIT 15
@@ -1111,7 +1111,7 @@ verified_queries:
         times_bought_together,
         lift,
         affinity_strength
-      FROM automated_intelligence.dbt_analytics.product_affinity
+      FROM dash_automated_intelligence_db.dbt_analytics.product_affinity
       WHERE product_a_category != product_b_category
         AND recommendation_priority = 1
       ORDER BY lift DESC

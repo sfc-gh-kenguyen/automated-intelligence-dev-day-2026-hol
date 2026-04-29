@@ -1,25 +1,19 @@
 -- ============================================================================
--- Cortex Agent: Business Insights Agent
+-- TEST: Validate HOL setup + Agent creation + Agent interactions
 -- ============================================================================
--- Creates an agent using the CREATE AGENT API that routes across:
---   1. Text-to-SQL (Cortex Analyst) via semantic view
---   2. Multi-index Cortex Search over product reviews (Agent Search)
---   3. Multi-index Cortex Search over support tickets (Agent Search)
---
--- The agent automatically routes user questions to the right tool,
--- enabling "what happened → why" conversations that span structured
--- and unstructured data.
---
--- Prerequisites (created by setup.sql):
---   - DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_ANALYTICS_SEMANTIC
---   - DASH_AUTOMATED_INTELLIGENCE_DB.RAW.PRODUCT_REVIEWS_SEARCH
---   - DASH_AUTOMATED_INTELLIGENCE_DB.RAW.SUPPORT_TICKETS_SEARCH
+-- Run after setup.sql completes successfully.
+-- Creates the Business Insights Agent and tests sample questions.
 -- ============================================================================
 
 USE ROLE ACCOUNTADMIN;
 USE DATABASE DASH_AUTOMATED_INTELLIGENCE_DB;
-USE SCHEMA SEMANTIC;
 USE WAREHOUSE HOL_WH;
+
+-- ============================================================================
+-- STEP 1: Create the Business Insights Agent
+-- ============================================================================
+
+USE SCHEMA SEMANTIC;
 
 CREATE OR REPLACE AGENT DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT
   COMMENT = 'Multi-tool business insights agent with text-to-SQL and Agent Search'
@@ -61,33 +55,48 @@ tool_resources:
     search_service: "DASH_AUTOMATED_INTELLIGENCE_DB.RAW.SUPPORT_TICKETS_SEARCH"
 $$;
 
--- Verify Agent
 SHOW AGENTS LIKE 'BUSINESS_INSIGHTS_AGENT' IN SCHEMA DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC;
 
 -- ============================================================================
--- Sample Questions for the Agent
+-- STEP 2: Test Agent with sample questions
 -- ============================================================================
---
--- "WHAT" questions (structured data via text-to-SQL):
---   "What was our total revenue in December 2025?"
---   "What are the top 5 product categories by order count?"
---   "What is the cancellation rate by month?"
---
--- "WHY" questions (unstructured search):
---   "Why are customers returning ski boots?"
---   "What are customers complaining about in February?"
---   "Show me support tickets about sizing issues"
---
--- "WHAT → WHY" multi-turn conversations:
---   User: "What happened to revenue in February vs January?"
---   Agent: Revenue dropped 38% ($78M → $32M). Cancellations spiked to 12%.
---   User: "Why did that happen?"
---   Agent: [searches reviews + tickets] Boot sizing complaints drove returns.
---          15 negative reviews mention "wrong size" and "tight fit".
---          40 support tickets filed for exchanges in Feb (vs 8 in Jan).
---
--- Multi-index search (keyword + semantic):
---   "Find reviews mentioning 'wrong size' with a rating below 3"
---   "Search for tickets about shipping delays during the holiday season"
---   "What do customers say about the Powder Skis quality?"
--- ============================================================================
+
+-- Q1: "What" question (text-to-SQL)
+SELECT TRY_PARSE_JSON(
+  SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+    'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT',
+    $${ "messages": [{"role": "user", "content": [{"type": "text", "text": "What was our total revenue in December 2025 vs February 2026?"}]}], "stream": false }$$
+  )
+) AS q1_revenue_comparison;
+
+-- Q2: "Why" question (search)
+SELECT TRY_PARSE_JSON(
+  SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+    'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT',
+    $${ "messages": [{"role": "user", "content": [{"type": "text", "text": "Why are customers returning ski boots?"}]}], "stream": false }$$
+  )
+) AS q2_full_response;
+
+-- Q3: "What → Why" question (multi-tool)
+SELECT TRY_PARSE_JSON(
+  SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+    'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT',
+    $${ "messages": [{"role": "user", "content": [{"type": "text", "text": "Revenue dropped in February — what caused it and what do reviews say?"}]}], "stream": false }$$
+  )
+) AS q3_full_response;
+
+-- Q4: Multi-index search
+SELECT TRY_PARSE_JSON(
+  SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+    'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT',
+    $${ "messages": [{"role": "user", "content": [{"type": "text", "text": "Find reviews mentioning wrong size with a rating below 3"}]}], "stream": false }$$
+  )
+) AS q4_full_response;
+
+-- Q5: RBAC demo question
+SELECT TRY_PARSE_JSON(
+  SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+    'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT',
+    $${ "messages": [{"role": "user", "content": [{"type": "text", "text": "What is our total revenue and customer count by state?"}]}], "stream": false }$$
+  )
+) AS q5_full_response;

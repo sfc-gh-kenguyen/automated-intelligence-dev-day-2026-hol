@@ -4,6 +4,6 @@
   "url": "https://YOUR_ACCOUNT.snowflakecomputing.com",
   "private_key": "-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----",
   "database": "AUTOMATED_INTELLIGENCE",
-  "schema": "RAW",
+  "schema": "STAGING",
   "warehouse": "COMPUTE_WH"
 }

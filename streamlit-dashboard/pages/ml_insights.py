@@ -28,7 +28,7 @@ with tab1:
             model_version_name as version_name,
             comment,
             created_on
-        FROM AUTOMATED_INTELLIGENCE.INFORMATION_SCHEMA.MODEL_VERSIONS
+        FROM DASH_AUTOMATED_INTELLIGENCE_DB.INFORMATION_SCHEMA.MODEL_VERSIONS
         WHERE model_name = 'PRODUCT_RECOMMENDATION_XGBOOST'
         ORDER BY created_on DESC
         LIMIT 1
@@ -164,7 +164,7 @@ with tab1:
             **To train the model:**
             1. Open `ml-training/product_recommendation_gpu_workspace.ipynb` in Snowflake Notebooks (Workspaces)
             2. Run all cells to train the model with GPU acceleration
-            3. Model will be saved to `AUTOMATED_INTELLIGENCE.MODELS` schema
+            3. Model will be saved to `DASH_AUTOMATED_INTELLIGENCE_DB.MODELS` schema
             4. Refresh this page to see results
             """)
     
@@ -185,7 +185,7 @@ with tab2:
                 total_orders,
                 total_spent,
                 avg_order_value
-            FROM AUTOMATED_INTELLIGENCE.INTERACTIVE.CUSTOMER_ORDER_ANALYTICS
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.INTERACTIVE.CUSTOMER_ORDER_ANALYTICS
             ORDER BY total_spent DESC
             LIMIT 50
         ),
@@ -199,9 +199,9 @@ with tab2:
                 DATEDIFF('day', MAX(o.ORDER_DATE), CURRENT_DATE()) as days_since_purchase,
                 COUNT(*) as times_purchased,
                 SUM(oi.UNIT_PRICE * oi.QUANTITY) as total_spent_on_product
-            FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS o
-            JOIN AUTOMATED_INTELLIGENCE.RAW.ORDER_ITEMS oi ON o.ORDER_ID = oi.ORDER_ID
-            JOIN AUTOMATED_INTELLIGENCE.RAW.PRODUCT_CATALOG pc ON oi.PRODUCT_ID = pc.PRODUCT_ID
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS o
+            JOIN DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDER_ITEMS oi ON o.ORDER_ID = oi.ORDER_ID
+            JOIN DASH_AUTOMATED_INTELLIGENCE_DB.RAW.PRODUCT_CATALOG pc ON oi.PRODUCT_ID = pc.PRODUCT_ID
             WHERE o.CUSTOMER_ID IN (SELECT customer_id FROM top_customers)
                 AND o.ORDER_STATUS IN ('Completed', 'Shipped')
             GROUP BY o.CUSTOMER_ID, oi.PRODUCT_ID, pc.PRODUCT_NAME, pc.PRODUCT_CATEGORY
@@ -210,7 +210,7 @@ with tab2:
             SELECT 
                 PRODUCT_ID,
                 COUNT(DISTINCT ORDER_ID) as total_orders
-            FROM AUTOMATED_INTELLIGENCE.RAW.ORDER_ITEMS
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDER_ITEMS
             GROUP BY PRODUCT_ID
         )
         SELECT 
@@ -337,7 +337,7 @@ with tab2:
 try:
     model_exists_query = """
     SELECT COUNT(*) as model_count
-    FROM AUTOMATED_INTELLIGENCE.INFORMATION_SCHEMA.MODEL_VERSIONS
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.INFORMATION_SCHEMA.MODEL_VERSIONS
     WHERE model_name = 'PRODUCT_RECOMMENDATION_XGBOOST'
     """
     model_exists_result = session.sql(model_exists_query).to_pandas()

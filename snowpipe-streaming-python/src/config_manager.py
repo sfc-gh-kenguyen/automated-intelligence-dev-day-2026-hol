@@ -93,4 +93,4 @@ class ConfigManager:
         return self.profile_config["warehouse"]
 
     def get_role(self) -> str:
-        return self.profile_config.get("role", "AUTOMATED_INTELLIGENCE")
+        return self.profile_config.get("role", "AUTOMATED_INTELLIGENCE_ADMIN")

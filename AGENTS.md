@@ -1,49 +1,37 @@
-# Agent Guidelines — automated-intelligence
+# Agent Guidelines — automated-intelligence-hol
 
 ## What This Repo Is
 
-Multi-domain demo monorepo showcasing Snowflake features. Each subdirectory is an independent demo -- they do NOT share code or dependencies.
-
-**Org:** iamontheinet (private repo)
+75-minute hands-on lab showcasing Snowflake's end-to-end data platform — from streaming ingestion to AI-powered analytics. Each subdirectory is an independent exercise.
 
 ## Architecture
 
 ```
-setup.sql                      ← Root DDL: creates base objects (AUTOMATED_INTELLIGENCE DB, schemas, etc.)
-setup/                         ← Additional setup scripts
-ai-sql-demo/                   ← AI SQL features demo
-data-quality/                  ← DMF and data quality demos
-dbt-analytics/                 ← dbt project
-gen2-warehouse/                ← Gen2 warehouse benchmarks
-iceberg/                       ← Iceberg tables demo
-interactive/                   ← Interactive warehouse demo
-ml-models/                     ← ML model registry demos
-ml-training/                   ← ML training demos
-monitoring/                    ← Monitoring and observability
-pg_lake/                       ← Postgres pg_lake demos
-security-and-governance/       ← Governance, masking, classification
-snowflake-intelligence/        ← Snowflake Intelligence demos
-snowflake-mcp-server/          ← MCP server demo
-snowflake-postgres/            ← Snowflake Postgres demos
-snowpipe-streaming-java/       ← Java Snowpipe streaming
-snowpipe-streaming-python/     ← Python Snowpipe streaming
-sql-features/                  ← SQL feature demos
-streamlit-dashboard/           ← Streamlit apps
-talk/                          ← Presentation materials
-tests/                         ← Test scripts
-workload-identity/             ← Workload identity demos
+setup.sql                      ← Root DDL: creates all shared infrastructure
+ai-sql-demo/                   ← AI SQL functions (AI_FILTER, AI_CLASSIFY)
+data-quality/                  ← Data Metric Functions (DMF) demo
+dbt-analytics/                 ← dbt project (staging + mart models)
+gen2-warehouse/                ← Gen2 warehouse + Optima Indexing
+iceberg/                       ← Iceberg partitioned writes
+interactive/                   ← Interactive Tables + warehouse
+ml-models/                     ← HuggingFace model import
+security-and-governance/       ← Row Access Policies (RBAC)
+snowflake-intelligence/        ← Cortex Agent + Semantic View
+snowpipe-streaming-python/     ← Python Snowpipe Streaming SDK
+sql-features/                  ← SQL feature demos (pipe operator, UNION BY NAME, etc.)
+streamlit-dashboard/           ← 7-page Streamlit in Snowflake app
+tests/                         ← Validation notebooks
 ```
 
 ## Critical Rules
 
-1. **Each subdirectory is independent.** No cross-subdir imports, shared utils, or common dependencies. Do not refactor to share code between them.
-2. **The Demo Guide kit at `~/Desktop/sfguide-ai-demos-with-cortex-code/` is the canonical demo source.** It has zero dependency on this repo. Do not create cross-references.
-3. **Connection:** `dash-builder-si` for local development.
-4. **Databases vary by demo:** `AUTOMATED_INTELLIGENCE`, `DASH_DB`, and others depending on the subdirectory.
+1. **Each subdirectory is independent.** No cross-subdir imports or shared dependencies.
+2. **Database:** `DASH_AUTOMATED_INTELLIGENCE_DB` for all exercises.
+3. **Role:** `AUTOMATED_INTELLIGENCE_ADMIN` (primary), `WEST_COAST_MANAGER` (RBAC demo).
+4. **Warehouses:** `HOL_WH` (standard), `HOL_GEN2_WH` (Gen2), `HOL_INTERACTIVE_WH` (interactive).
 
-## When Adding a New Demo
+## When Editing
 
-- Create a new subdirectory at the root level
-- Include its own setup SQL, README, and any dependencies
-- Do not modify `setup.sql` at root unless the new demo needs shared base objects
-- Keep it self-contained -- someone should be able to run just that subdirectory
+- Run `setup.sql` first — it creates all shared objects (tables, dynamic tables, interactive tables, search services, semantic views)
+- Component scripts in subdirectories extend the base setup (e.g., `create_agent.sql`, `setup_west_coast_manager.sql`)
+- Do not modify `setup.sql` unless changing shared infrastructure

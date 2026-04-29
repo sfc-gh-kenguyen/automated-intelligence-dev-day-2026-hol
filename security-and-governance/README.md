@@ -8,7 +8,7 @@ Perfect demo for showcasing **Row-Based Access Control** with Snowflake Intellig
 
 | Role | States Visible | Revenue | Customers |
 |------|---------------|---------|-----------|
-| **AUTOMATED_INTELLIGENCE** | All 10 states (BC, CA, CO, ID, MT, NV, OR, UT, WA, WY) | $733M | 20,200 |
+| **AUTOMATED_INTELLIGENCE_ADMIN** | All 10 states (BC, CA, CO, ID, MT, NV, OR, UT, WA, WY) | $733M | 20,200 |
 | **WEST_COAST_MANAGER** | Only 3 states (CA, OR, WA) | $224M | 6,115 |
 
 **Key Insight:** Same Business Insights Agent, dramatically different answers!
@@ -55,7 +55,7 @@ Open **Snowflake Intelligence** in two browser tabs/windows:
 
 **Tab 1 (Admin):**
 ```
-Use role: AUTOMATED_INTELLIGENCE
+Use role: AUTOMATED_INTELLIGENCE_ADMIN
 Ask: "What's our total revenue?"
 Result: ~$733M (all 10 states)
 ```
@@ -132,7 +132,7 @@ West Coast sees: OR ($75M), CA ($75M), WA ($73M)
 CREATE OR REPLACE ROW ACCESS POLICY customers_region_policy
 AS (state VARCHAR) RETURNS BOOLEAN ->
     CASE 
-        WHEN CURRENT_ROLE() IN ('AUTOMATED_INTELLIGENCE', 'ACCOUNTADMIN') 
+        WHEN CURRENT_ROLE() IN ('AUTOMATED_INTELLIGENCE_ADMIN', 'ACCOUNTADMIN') 
             THEN TRUE
         WHEN CURRENT_ROLE() = 'WEST_COAST_MANAGER' 
              AND state IN ('CA', 'OR', 'WA') 
@@ -244,7 +244,7 @@ SHOW ROW ACCESS POLICIES IN SCHEMA raw;
 -- Verify policy is on customers table
 SELECT * FROM TABLE(
     INFORMATION_SCHEMA.POLICY_REFERENCES(
-        POLICY_NAME => 'AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS_REGION_POLICY'
+        POLICY_NAME => 'DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS_REGION_POLICY'
     )
 );
 
@@ -258,7 +258,7 @@ SELECT DISTINCT state FROM customers ORDER BY state;
 ```sql
 -- Verify west_coast_manager has access to semantic view
 USE ROLE west_coast_manager;
-SELECT COUNT(*) FROM automated_intelligence.dynamic_tables.business_insights_semantic_view;
+SELECT COUNT(*) FROM dash_automated_intelligence_db.dynamic_tables.business_insights_semantic_view;
 
 -- This should work but return filtered results when joined with customers
 ```
@@ -289,7 +289,7 @@ CREATE ROLE mountain_region_manager;
 CREATE OR REPLACE ROW ACCESS POLICY customers_region_policy
 AS (state VARCHAR) RETURNS BOOLEAN ->
     CASE 
-        WHEN CURRENT_ROLE() IN ('AUTOMATED_INTELLIGENCE', 'ACCOUNTADMIN') 
+        WHEN CURRENT_ROLE() IN ('AUTOMATED_INTELLIGENCE_ADMIN', 'ACCOUNTADMIN') 
             THEN TRUE
         WHEN CURRENT_ROLE() = 'WEST_COAST_MANAGER' 
              AND state IN ('CA', 'OR', 'WA') THEN TRUE
@@ -306,7 +306,7 @@ AS (state VARCHAR) RETURNS BOOLEAN ->
 CREATE OR REPLACE ROW ACCESS POLICY customers_region_time_policy
 AS (state VARCHAR, order_date DATE) RETURNS BOOLEAN ->
     CASE 
-        WHEN CURRENT_ROLE() IN ('AUTOMATED_INTELLIGENCE', 'ACCOUNTADMIN') 
+        WHEN CURRENT_ROLE() IN ('AUTOMATED_INTELLIGENCE_ADMIN', 'ACCOUNTADMIN') 
             THEN TRUE
         WHEN CURRENT_ROLE() = 'WEST_COAST_MANAGER' 
              AND state IN ('CA', 'OR', 'WA')

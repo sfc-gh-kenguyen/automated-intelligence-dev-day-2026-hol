@@ -5,9 +5,9 @@
 -- Run after: setup_interactive.sql
 -- ============================================================================
 
-USE ROLE AUTOMATED_INTELLIGENCE;
+USE ROLE AUTOMATED_INTELLIGENCE_ADMIN;
 
-USE DATABASE automated_intelligence;
+USE DATABASE dash_automated_intelligence_db;
 USE WAREHOUSE automated_intelligence_interactive_wh;
 
 -- ============================================================================
@@ -16,7 +16,7 @@ USE WAREHOUSE automated_intelligence_interactive_wh;
 
 SELECT '═══ Test 1: Verify Interactive Tables ═══' AS test_section;
 
-SHOW TABLES IN automated_intelligence.interactive;
+SHOW TABLES IN dash_automated_intelligence_db.interactive;
 
 -- Expected: 2 tables (customer_order_analytics, order_lookup)
 
@@ -45,7 +45,7 @@ SELECT
   COUNT(DISTINCT customer_id) AS unique_customers,
   MIN(order_date) AS earliest_order,
   MAX(order_date) AS latest_order
-FROM automated_intelligence.interactive.customer_order_analytics
+FROM dash_automated_intelligence_db.interactive.customer_order_analytics
 
 UNION ALL
 
@@ -55,7 +55,7 @@ SELECT
   COUNT(DISTINCT customer_id) AS unique_customers,
   MIN(order_date) AS earliest_order,
   MAX(order_date) AS latest_order
-FROM automated_intelligence.interactive.order_lookup;
+FROM dash_automated_intelligence_db.interactive.order_lookup;
 
 -- Expected: Both tables should have same row counts (from raw.orders)
 
@@ -67,7 +67,7 @@ SELECT '═══ Test 4: Point Lookup by Customer ID ═══' AS test_section
 
 -- Find a valid customer_id first
 SELECT customer_id 
-FROM automated_intelligence.interactive.customer_order_analytics 
+FROM dash_automated_intelligence_db.interactive.customer_order_analytics 
 LIMIT 1;
 
 -- Test query (use actual customer_id from above)
@@ -76,7 +76,7 @@ SELECT
   COUNT(*) AS order_count,
   SUM(total_amount) AS total_spent,
   AVG(total_amount) AS avg_order_value
-FROM automated_intelligence.interactive.customer_order_analytics
+FROM dash_automated_intelligence_db.interactive.customer_order_analytics
 WHERE customer_id = 5000  -- Replace with valid ID
 GROUP BY customer_id;
 
@@ -90,7 +90,7 @@ SELECT '═══ Test 5: Point Lookup by Order ID ═══' AS test_section;
 
 -- Find a valid order_id first
 SELECT order_id 
-FROM automated_intelligence.interactive.order_lookup 
+FROM dash_automated_intelligence_db.interactive.order_lookup 
 LIMIT 1;
 
 -- Test query (use actual order_id from above)
@@ -102,7 +102,7 @@ SELECT
   total_amount,
   discount_percent,
   shipping_cost
-FROM automated_intelligence.interactive.order_lookup
+FROM dash_automated_intelligence_db.interactive.order_lookup
 WHERE order_id = 50100;  -- Replace with valid ID
 
 -- Expected: <50ms response time
@@ -119,7 +119,7 @@ SELECT
   order_date,
   order_status,
   total_amount
-FROM automated_intelligence.interactive.customer_order_analytics
+FROM dash_automated_intelligence_db.interactive.customer_order_analytics
 WHERE order_date >= DATEADD('day', -30, CURRENT_DATE())
 ORDER BY order_date DESC
 LIMIT 50;
@@ -137,7 +137,7 @@ SELECT
   COUNT(*) AS order_count,
   SUM(total_amount) AS total_revenue,
   AVG(total_amount) AS avg_revenue
-FROM automated_intelligence.interactive.order_lookup
+FROM dash_automated_intelligence_db.interactive.order_lookup
 WHERE order_date >= DATEADD('day', -7, CURRENT_DATE())
 GROUP BY order_status
 ORDER BY total_revenue DESC;
@@ -153,7 +153,7 @@ SELECT '═══ Test 8: Check Interactive Table Type ═══' AS test_sectio
 SELECT 
   table_name,
   table_type
-FROM automated_intelligence.information_schema.tables
+FROM dash_automated_intelligence_db.information_schema.tables
 WHERE table_schema = 'INTERACTIVE'
   AND table_name IN ('CUSTOMER_ORDER_ANALYTICS', 'ORDER_LOOKUP');
 
@@ -166,10 +166,10 @@ WHERE table_schema = 'INTERACTIVE'
 SELECT '═══ Test 9: Verify Clustering Keys ═══' AS test_section;
 
 -- Check customer_order_analytics clustering
-SHOW TABLES LIKE 'customer_order_analytics' IN automated_intelligence.interactive;
+SHOW TABLES LIKE 'customer_order_analytics' IN dash_automated_intelligence_db.interactive;
 
 -- Check order_lookup clustering
-SHOW TABLES LIKE 'order_lookup' IN automated_intelligence.interactive;
+SHOW TABLES LIKE 'order_lookup' IN dash_automated_intelligence_db.interactive;
 
 -- Expected: CLUSTER_BY column should show (customer_id) and (order_id)
 
@@ -185,7 +185,7 @@ USE WAREHOUSE automated_intelligence_wh;
 SELECT 
   customer_id,
   COUNT(*) AS order_count
-FROM automated_intelligence.raw.orders
+FROM dash_automated_intelligence_db.raw.orders
 WHERE customer_id = 5000
 GROUP BY customer_id;
 
@@ -195,7 +195,7 @@ USE WAREHOUSE automated_intelligence_interactive_wh;
 SELECT 
   customer_id,
   COUNT(*) AS order_count
-FROM automated_intelligence.interactive.customer_order_analytics
+FROM dash_automated_intelligence_db.interactive.customer_order_analytics
 WHERE customer_id = 5000
 GROUP BY customer_id;
 
@@ -216,7 +216,7 @@ SELECT '─────────────', '─────────',
 UNION ALL
 SELECT 
   'Interactive Tables',
-  CASE WHEN (SELECT COUNT(*) FROM automated_intelligence.interactive.customer_order_analytics) > 0
+  CASE WHEN (SELECT COUNT(*) FROM dash_automated_intelligence_db.interactive.customer_order_analytics) > 0
     THEN '✅ PASS' ELSE '❌ FAIL' END,
   'Data populated'
 UNION ALL
@@ -247,10 +247,10 @@ SELECT
   order_id,
   order_status,
   total_amount
-FROM automated_intelligence.interactive.customer_order_analytics
+FROM dash_automated_intelligence_db.interactive.customer_order_analytics
 WHERE customer_id = (
   SELECT customer_id 
-  FROM automated_intelligence.interactive.customer_order_analytics 
+  FROM dash_automated_intelligence_db.interactive.customer_order_analytics 
   LIMIT 1
 )
 ORDER BY order_date DESC
@@ -262,7 +262,7 @@ SELECT
   customer_id,
   order_date,
   total_amount
-FROM automated_intelligence.interactive.order_lookup
+FROM dash_automated_intelligence_db.interactive.order_lookup
 WHERE total_amount > 300
   AND order_date >= DATEADD('day', -30, CURRENT_DATE())
 ORDER BY total_amount DESC
@@ -273,7 +273,7 @@ SELECT
   order_status,
   COUNT(*) AS order_count,
   SUM(total_amount) AS total_revenue
-FROM automated_intelligence.interactive.order_lookup
+FROM dash_automated_intelligence_db.interactive.order_lookup
 WHERE order_date >= DATEADD('day', -7, CURRENT_DATE())
 GROUP BY order_status
 ORDER BY order_count DESC;

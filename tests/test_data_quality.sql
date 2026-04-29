@@ -3,7 +3,7 @@
 -- Purpose: Test DMFs and alerts by inserting problematic data
 -- ============================================================================
 
-USE DATABASE automated_intelligence;
+USE DATABASE dash_automated_intelligence_db;
 USE SCHEMA raw;
 USE WAREHOUSE automated_intelligence_wh;
 
@@ -64,7 +64,7 @@ SELECT
   'Expected: 0 NULLs for valid data' AS note
 FROM SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS
 WHERE 
-  table_database = 'AUTOMATED_INTELLIGENCE'
+  table_database = 'DASH_AUTOMATED_INTELLIGENCE_DB'
   AND table_schema = 'RAW'
   AND table_name IN ('ORDERS', 'ORDER_ITEMS')
   AND measurement_time >= DATEADD('MINUTE', -5, CURRENT_TIMESTAMP())
@@ -117,7 +117,7 @@ SELECT
   'Check for increased NULL counts' AS note
 FROM SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS
 WHERE 
-  table_database = 'AUTOMATED_INTELLIGENCE'
+  table_database = 'DASH_AUTOMATED_INTELLIGENCE_DB'
   AND table_schema = 'RAW'
   AND table_name IN ('ORDERS', 'ORDER_ITEMS')
   AND value > 0  -- Only show columns with NULL values
@@ -142,7 +142,7 @@ SELECT
   'This would trigger an alert' AS alert_trigger
 FROM SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS
 WHERE 
-  table_database = 'AUTOMATED_INTELLIGENCE'
+  table_database = 'DASH_AUTOMATED_INTELLIGENCE_DB'
   AND table_schema = 'RAW'
   AND table_name IN ('ORDERS', 'ORDER_ITEMS')
   AND metric_name = 'NULL_COUNT'
@@ -167,7 +167,7 @@ ORDER BY alert_time DESC
 LIMIT 10;
 
 -- If no alerts yet, check alert status
-SHOW ALERTS LIKE 'data_quality_alert' IN SCHEMA automated_intelligence.raw;
+SHOW ALERTS LIKE 'data_quality_alert' IN SCHEMA dash_automated_intelligence_db.raw;
 
 -- ============================================================================
 -- STEP 11: View Alert History
@@ -215,4 +215,4 @@ UNION ALL SELECT ''
 UNION ALL SELECT 'Key Monitoring Queries:'
 UNION ALL SELECT '- SELECT * FROM SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS WHERE value > 0'
 UNION ALL SELECT '- SELECT * FROM data_quality_alerts ORDER BY alert_time DESC'
-UNION ALL SELECT '- SHOW ALERTS IN SCHEMA automated_intelligence.raw';
+UNION ALL SELECT '- SHOW ALERTS IN SCHEMA dash_automated_intelligence_db.raw';

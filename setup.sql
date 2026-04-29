@@ -1,24 +1,23 @@
 -- ============================================================================
--- INGESTION TO INTELLIGENCE - Complete Setup Script
+-- AUTOMATED INTELLIGENCE: HANDS-ON LAB - Setup Script
 -- 
 -- Theme: From raw data to AI-powered insights—entirely within Snowflake.
 --
--- This script creates all infrastructure for the demo journey:
---   Act 1: Ingest & Stage    → Streaming tables, staging, dynamic tables
---   Act 2: Serve & Analyze   → Interactive tables, dbt schemas, ML models
---   Act 3: Intelligence      → Cortex Search, semantic views, AI functions
---   Bonus: Open Lakehouse    → Iceberg export (separate script)
+-- This script creates all infrastructure for the hands-on lab:
+--   Section 1: Ingest & Stage  → Streaming tables, staging, dynamic tables
+--   Section 2: Serve & Analyze → Interactive tables, dbt schemas
+--   Section 3: Intelligence    → Cortex Search, semantic views, AI functions
 --
 -- Execution Order:
 --   0. PREREQUISITES: Grant account-level privileges (ACCOUNTADMIN only)
 --   1. Clean up existing objects (WIPE SLATE)
 --   2. Create database, schemas, warehouses
---   3. Create raw tables and stored procedures (Act 1)
---   4. Create dynamic tables pipeline (Act 1)
---   5. Create interactive tables (Act 2)
---   6. Create AI/ML infrastructure (Act 3)
---   7. Create Cortex Search Service (Act 3)
---   8. Create Semantic View (Act 3)
+--   3. Create raw tables and stored procedures
+--   4. Create dynamic tables pipeline
+--   5. Create interactive tables
+--   6. Create AI/ML infrastructure
+--   7. Create Cortex Search Service
+--   8. Create Semantic View
 --
 -- IMPORTANT: Run PREREQUISITES section first as ACCOUNTADMIN, then the rest
 -- ============================================================================
@@ -26,126 +25,31 @@
 -- ============================================================================
 -- PREREQUISITES: ACCOUNTADMIN GRANTS (Run as ACCOUNTADMIN first)
 -- ============================================================================
--- This section MUST be run as ACCOUNTADMIN before executing the rest of the script.
--- 
--- CREATE SNOWFLAKE INTELLIGENCE ON ACCOUNT is an account-level privilege that controls 
--- who can create Snowflake Intelligence objects (Agents, Analysts) within your account.
--- This ensures proper governance over AI capabilities through:
---   - Security: Only authorized roles can create Intelligence objects
---   - Controlled Rollout: Administrators control which roles manage Snowflake Intelligence
---   - Layered Permissions: Additional USAGE/ALTER privileges control object access after creation
 
 USE ROLE ACCOUNTADMIN;
 
--- Create the role for managing automated intelligence platform
-CREATE ROLE IF NOT EXISTS AUTOMATED_INTELLIGENCE
-  COMMENT = 'Role for managing the Automated Intelligence platform including databases, warehouses, dynamic tables, and Snowflake Intelligence objects';
+CREATE OR REPLACE ROLE AUTOMATED_INTELLIGENCE_ADMIN
+  COMMENT = 'Role for managing the Automated Intelligence platform';
 
--- Grant Snowflake Intelligence privilege to allow creation of AI agents and analysts
-GRANT CREATE SNOWFLAKE INTELLIGENCE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE;
+SET current_user = (SELECT CURRENT_USER());
+GRANT ROLE AUTOMATED_INTELLIGENCE_ADMIN TO USER IDENTIFIER($current_user);
+ALTER USER IDENTIFIER($current_user) SET DEFAULT_ROLE = AUTOMATED_INTELLIGENCE_ADMIN;
+
+GRANT CREATE SNOWFLAKE INTELLIGENCE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
+GRANT CREATE DATABASE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
+GRANT CREATE WAREHOUSE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
 
 -- ============================================================================
--- MAIN SETUP: Switch to AUTOMATED_INTELLIGENCE role
+-- MAIN SETUP: Continue as ACCOUNTADMIN (PAT sessions cannot switch roles)
 -- ============================================================================
--- After running the PREREQUISITES section above, execute the rest with this role
-USE ROLE AUTOMATED_INTELLIGENCE;
 
 -- ============================================================================
 -- STEP 0: WIPE SLATE - Drop all existing objects
 -- ============================================================================
 
--- Create database if not exists (needed for context)
-CREATE DATABASE IF NOT EXISTS automated_intelligence;
-USE DATABASE automated_intelligence;
-
--- Drop alerts first (dependencies on views/tables)
-DROP ALERT IF EXISTS raw.data_quality_alert;
-
--- Drop Cortex Search Services
-DROP CORTEX SEARCH SERVICE IF EXISTS raw.product_search_service;
-
--- Drop views (before tables they depend on)
--- Note: Some schemas may not exist yet, which is fine
-DROP VIEW IF EXISTS raw.vw_dq_monitoring_results;
--- Skip views in schemas that may not exist (they'll be dropped with CASCADE)
--- DROP VIEW IF EXISTS analytics_iceberg.ingestion_stats;
--- DROP VIEW IF EXISTS dbt_staging.stg_customers;
--- DROP VIEW IF EXISTS dbt_staging.stg_orders;
--- DROP VIEW IF EXISTS dbt_staging.stg_order_items;
--- DROP VIEW IF EXISTS dbt_staging.stg_products;
-
--- Drop dynamic tables (in reverse dependency order)
-DROP DYNAMIC TABLE IF EXISTS dynamic_tables.product_performance_metrics;
-DROP DYNAMIC TABLE IF EXISTS dynamic_tables.daily_business_metrics;
-DROP DYNAMIC TABLE IF EXISTS dynamic_tables.fact_orders;
-DROP DYNAMIC TABLE IF EXISTS dynamic_tables.enriched_order_items;
-DROP DYNAMIC TABLE IF EXISTS dynamic_tables.enriched_orders;
-
--- Drop tables in schemas that may not exist (they'll be dropped with CASCADE)
--- DROP TABLE IF EXISTS interactive.customer_order_analytics;
--- DROP TABLE IF EXISTS interactive.order_lookup;
-
--- Drop base tables in all schemas
-DROP TABLE IF EXISTS raw.trulens_records;
-DROP TABLE IF EXISTS raw.trulens_ground_truth;
-DROP TABLE IF EXISTS raw.trulens_feedback_defs;
-DROP TABLE IF EXISTS raw.trulens_feedbacks;
-DROP TABLE IF EXISTS raw.trulens_dataset;
-DROP TABLE IF EXISTS raw.trulens_apps;
-DROP TABLE IF EXISTS raw.trulens_alembic_version;
-DROP TABLE IF EXISTS raw.support_tickets;
-DROP TABLE IF EXISTS raw.product_reviews;
-DROP TABLE IF EXISTS raw.product_performance_metrics;
-DROP TABLE IF EXISTS raw.product_catalog;
-DROP TABLE IF EXISTS raw.order_items_backup;
-DROP TABLE IF EXISTS raw.order_items;
-DROP TABLE IF EXISTS raw.orders_backup;
-DROP TABLE IF EXISTS raw.orders;
-DROP TABLE IF EXISTS raw.fact_orders;
-DROP TABLE IF EXISTS raw.enriched_order_items;
-DROP TABLE IF EXISTS raw.enriched_orders;
-DROP TABLE IF EXISTS raw.daily_business_metrics;
-DROP TABLE IF EXISTS raw.data_quality_alerts;
-DROP TABLE IF EXISTS raw.customers;
-
-DROP TABLE IF EXISTS staging.order_items_staging;
-DROP TABLE IF EXISTS staging.orders_staging;
-DROP TABLE IF EXISTS staging.discount_snapshot;
-
--- Drop tables in schemas that may not exist (they'll be dropped with CASCADE)
--- DROP TABLE IF EXISTS dbt_analytics.product_recommendations;
--- DROP TABLE IF EXISTS dbt_analytics.product_affinity;
--- DROP TABLE IF EXISTS dbt_analytics.monthly_cohorts;
--- DROP TABLE IF EXISTS dbt_analytics.customer_segmentation;
--- DROP TABLE IF EXISTS dbt_analytics.customer_lifetime_value;
-
--- Note: Iceberg tables require external volume privileges to drop
--- Skipping these - they will be recreated if needed or can be dropped manually with ACCOUNTADMIN
--- DROP TABLE IF EXISTS analytics_iceberg.order_items;
--- DROP TABLE IF EXISTS analytics_iceberg.orders;
-
--- Drop stored procedures
-DROP PROCEDURE IF EXISTS raw.generate_customers(INT);
-DROP PROCEDURE IF EXISTS staging.merge_staging_to_raw(BOOLEAN);
-DROP PROCEDURE IF EXISTS staging.merge_staging_to_raw(VARCHAR, BOOLEAN);
-DROP PROCEDURE IF EXISTS staging.enrich_raw_data(BOOLEAN);
-DROP PROCEDURE IF EXISTS staging.enrich_raw_data(VARCHAR, BOOLEAN);
-DROP PROCEDURE IF EXISTS staging.create_discount_snapshot();
-DROP PROCEDURE IF EXISTS staging.restore_discount_snapshot();
-DROP PROCEDURE IF EXISTS staging.truncate_staging_tables();
-DROP PROCEDURE IF EXISTS staging.get_staging_counts();
-
--- Drop schemas (except INFORMATION_SCHEMA which is system-managed)
--- Note: analytics_iceberg schema may require ACCOUNTADMIN to drop due to external volume dependencies
--- DROP SCHEMA IF EXISTS analytics_iceberg CASCADE;
-DROP SCHEMA IF EXISTS models CASCADE;
-DROP SCHEMA IF EXISTS dbt_analytics CASCADE;
-DROP SCHEMA IF EXISTS dbt_staging CASCADE;
-DROP SCHEMA IF EXISTS dynamic_tables CASCADE;
-DROP SCHEMA IF EXISTS interactive CASCADE;
-DROP SCHEMA IF EXISTS staging CASCADE;
-DROP SCHEMA IF EXISTS semantic CASCADE;
-DROP SCHEMA IF EXISTS raw CASCADE;
+DROP DATABASE IF EXISTS dash_automated_intelligence_db CASCADE;
+CREATE DATABASE dash_automated_intelligence_db;
+USE DATABASE dash_automated_intelligence_db;
 
 -- ============================================================================
 -- STEP 1: Infrastructure Foundation
@@ -153,20 +57,19 @@ DROP SCHEMA IF EXISTS raw CASCADE;
 -- ============================================================================
 
 -- Create database (already exists from step 0)
-CREATE DATABASE IF NOT EXISTS automated_intelligence;
+CREATE DATABASE IF NOT EXISTS dash_automated_intelligence_db;
 
 -- Create schemas
-CREATE SCHEMA IF NOT EXISTS automated_intelligence.raw;
-CREATE SCHEMA IF NOT EXISTS automated_intelligence.staging;
-CREATE SCHEMA IF NOT EXISTS automated_intelligence.dynamic_tables;
-CREATE SCHEMA IF NOT EXISTS automated_intelligence.interactive;
-CREATE SCHEMA IF NOT EXISTS automated_intelligence.semantic;
-CREATE SCHEMA IF NOT EXISTS automated_intelligence.models COMMENT = 'Schema for ML models registered via Snowflake Model Registry';
-CREATE SCHEMA IF NOT EXISTS automated_intelligence.dbt_staging COMMENT = 'Schema for dbt staging models';
-CREATE SCHEMA IF NOT EXISTS automated_intelligence.dbt_analytics COMMENT = 'Schema for dbt analytical models';
+CREATE SCHEMA IF NOT EXISTS dash_automated_intelligence_db.raw;
+CREATE SCHEMA IF NOT EXISTS dash_automated_intelligence_db.staging;
+CREATE SCHEMA IF NOT EXISTS dash_automated_intelligence_db.dynamic_tables;
+CREATE SCHEMA IF NOT EXISTS dash_automated_intelligence_db.interactive;
+CREATE SCHEMA IF NOT EXISTS dash_automated_intelligence_db.semantic;
+CREATE SCHEMA IF NOT EXISTS dash_automated_intelligence_db.dbt_staging COMMENT = 'Schema for dbt staging models';
+CREATE SCHEMA IF NOT EXISTS dash_automated_intelligence_db.dbt_analytics COMMENT = 'Schema for dbt analytical models';
 
 -- Create warehouse
-CREATE WAREHOUSE IF NOT EXISTS automated_intelligence_wh
+CREATE OR REPLACE WAREHOUSE hol_wh
   WITH WAREHOUSE_SIZE = 'SMALL'
   AUTO_SUSPEND = 60
   AUTO_RESUME = TRUE
@@ -174,9 +77,9 @@ CREATE WAREHOUSE IF NOT EXISTS automated_intelligence_wh
   COMMENT = 'Warehouse for automated intelligence dynamic tables demo';
 
 -- Set context
-USE DATABASE automated_intelligence;
+USE DATABASE dash_automated_intelligence_db;
 USE SCHEMA raw;
-USE WAREHOUSE automated_intelligence_wh;
+USE WAREHOUSE hol_wh;
 
 
 -- ============================================================================
@@ -299,7 +202,7 @@ SHOW PROCEDURES LIKE '%generate%';
 -- Purpose: Staging tables for MERGE operations, Gen2 for Optima Indexing
 -- ============================================================================
 
-USE SCHEMA automated_intelligence.staging;
+USE SCHEMA dash_automated_intelligence_db.staging;
 
 -- Create staging tables for Snowpipe Streaming
 CREATE TABLE IF NOT EXISTS orders_staging (
@@ -332,7 +235,7 @@ CREATE TABLE IF NOT EXISTS discount_snapshot (
 );
 
 -- Create Gen2 warehouse
-CREATE WAREHOUSE IF NOT EXISTS automated_intelligence_gen2_wh
+CREATE OR REPLACE WAREHOUSE hol_gen2_wh
 WITH 
     WAREHOUSE_SIZE = 'XSMALL'
     AUTO_SUSPEND = 60
@@ -576,8 +479,8 @@ $$;
 -- Purpose: 3-tier incremental refresh pipeline (Enrichment → Integration → Aggregation)
 -- ============================================================================
 
-USE SCHEMA automated_intelligence.dynamic_tables;
-USE WAREHOUSE automated_intelligence_wh;
+USE SCHEMA dash_automated_intelligence_db.dynamic_tables;
+USE WAREHOUSE hol_wh;
 
 -- Drop existing dynamic tables to avoid schema conflicts when updating
 DROP DYNAMIC TABLE IF EXISTS product_performance_metrics;
@@ -597,8 +500,8 @@ DROP DYNAMIC TABLE IF EXISTS enriched_orders;
 -- TARGET_LAG = '1 minute' for near real-time analytics (matches Snowpipe Streaming latency)
 CREATE OR REPLACE DYNAMIC TABLE enriched_orders
 TARGET_LAG = '1 minute'
-WAREHOUSE = automated_intelligence_wh
-SCHEDULER = ENABLE
+WAREHOUSE = hol_wh
+INITIALIZE = ON_SCHEDULE
 REFRESH_MODE = INCREMENTAL
 AS
 SELECT
@@ -640,14 +543,14 @@ SELECT
         WHEN o.total_amount < 2000 THEN 'Large'
         ELSE 'Extra Large'
     END AS order_size_category
-FROM automated_intelligence.raw.orders o;
+FROM dash_automated_intelligence_db.raw.orders o;
 
 -- Enriched Order Items: Add price analysis and category flags
 -- TARGET_LAG = '1 minute' for near real-time analytics (matches Snowpipe Streaming latency)
 CREATE OR REPLACE DYNAMIC TABLE enriched_order_items
 TARGET_LAG = '1 minute'
-WAREHOUSE = automated_intelligence_wh
-SCHEDULER = ENABLE
+WAREHOUSE = hol_wh
+INITIALIZE = ON_SCHEDULE
 REFRESH_MODE = INCREMENTAL
 AS
 SELECT
@@ -674,7 +577,7 @@ SELECT
         WHEN oi.quantity <= 3 THEN 'Few'
         ELSE 'Bulk'
     END AS quantity_tier
-FROM automated_intelligence.raw.order_items oi;
+FROM dash_automated_intelligence_db.raw.order_items oi;
 
 -- ----------------------------------------------------------------------------
 -- TIER 2: Integration Layer
@@ -685,8 +588,8 @@ FROM automated_intelligence.raw.order_items oi;
 
 CREATE OR REPLACE DYNAMIC TABLE fact_orders
 TARGET_LAG = DOWNSTREAM
-WAREHOUSE = automated_intelligence_wh
-SCHEDULER = ENABLE
+WAREHOUSE = hol_wh
+INITIALIZE = ON_SCHEDULE
 REFRESH_MODE = INCREMENTAL
 AS
 SELECT
@@ -730,8 +633,8 @@ SELECT
     -- Calculated metrics
     COUNT(eoi.order_item_id) OVER (PARTITION BY eo.order_id) AS items_per_order,
     SUM(eoi.line_total) OVER (PARTITION BY eo.order_id) AS order_items_total
-FROM automated_intelligence.dynamic_tables.enriched_orders eo
-INNER JOIN automated_intelligence.dynamic_tables.enriched_order_items eoi
+FROM dash_automated_intelligence_db.dynamic_tables.enriched_orders eo
+INNER JOIN dash_automated_intelligence_db.dynamic_tables.enriched_order_items eoi
     ON eo.order_id = eoi.order_id;
 
 -- ----------------------------------------------------------------------------
@@ -744,8 +647,8 @@ INNER JOIN automated_intelligence.dynamic_tables.enriched_order_items eoi
 -- Daily Business Metrics: Daily aggregations of key business metrics
 CREATE OR REPLACE DYNAMIC TABLE daily_business_metrics
 TARGET_LAG = DOWNSTREAM
-WAREHOUSE = automated_intelligence_wh
-SCHEDULER = ENABLE
+WAREHOUSE = hol_wh
+INITIALIZE = ON_SCHEDULE
 REFRESH_MODE = INCREMENTAL
 AS
 SELECT
@@ -779,7 +682,7 @@ SELECT
     COUNT(DISTINCT CASE WHEN order_size_category = 'Medium' THEN order_id END) AS medium_orders,
     COUNT(DISTINCT CASE WHEN order_size_category = 'Large' THEN order_id END) AS large_orders,
     COUNT(DISTINCT CASE WHEN order_size_category = 'Extra Large' THEN order_id END) AS extra_large_orders
-FROM automated_intelligence.dynamic_tables.fact_orders
+FROM dash_automated_intelligence_db.dynamic_tables.fact_orders
 GROUP BY 
     order_date_only,
     order_year,
@@ -791,8 +694,8 @@ GROUP BY
 -- Product Performance Metrics: Product category aggregations
 CREATE OR REPLACE DYNAMIC TABLE product_performance_metrics
 TARGET_LAG = DOWNSTREAM
-WAREHOUSE = automated_intelligence_wh
-SCHEDULER = ENABLE
+WAREHOUSE = hol_wh
+INITIALIZE = ON_SCHEDULE
 REFRESH_MODE = INCREMENTAL
 AS
 SELECT
@@ -821,7 +724,7 @@ SELECT
     COUNT(CASE WHEN quantity_tier = 'Single' THEN 1 END) AS single_item_orders,
     COUNT(CASE WHEN quantity_tier = 'Few' THEN 1 END) AS few_item_orders,
     COUNT(CASE WHEN quantity_tier = 'Bulk' THEN 1 END) AS bulk_orders
-FROM automated_intelligence.dynamic_tables.fact_orders
+FROM dash_automated_intelligence_db.dynamic_tables.fact_orders
 GROUP BY product_category;
 
 
@@ -830,7 +733,7 @@ GROUP BY product_category;
 -- Purpose: Sub-100ms queries for high-concurrency serving (GA Dec 2025)
 -- ============================================================================
 
-USE SCHEMA automated_intelligence.interactive;
+USE SCHEMA dash_automated_intelligence_db.interactive;
 
 -- Create interactive tables (aggregated customer analytics)
 CREATE OR REPLACE INTERACTIVE TABLE customer_order_analytics
@@ -847,8 +750,8 @@ SELECT
   AVG(o.total_amount) as avg_order_value,
   MIN(o.order_date) as first_order_date,
   MAX(o.order_date) as last_order_date
-FROM automated_intelligence.raw.customers c
-INNER JOIN automated_intelligence.raw.orders o ON c.customer_id = o.customer_id
+FROM dash_automated_intelligence_db.raw.customers c
+INNER JOIN dash_automated_intelligence_db.raw.orders o ON c.customer_id = o.customer_id
 GROUP BY c.customer_id, c.first_name, c.last_name, c.email, c.customer_segment;
 
 CREATE OR REPLACE INTERACTIVE TABLE order_lookup
@@ -863,15 +766,15 @@ SELECT
   c.first_name,
   c.last_name,
   c.email
-FROM automated_intelligence.raw.orders o
-INNER JOIN automated_intelligence.raw.customers c ON o.customer_id = c.customer_id;
+FROM dash_automated_intelligence_db.raw.orders o
+INNER JOIN dash_automated_intelligence_db.raw.customers c ON o.customer_id = c.customer_id;
 
 -- Create interactive warehouse
-CREATE OR REPLACE INTERACTIVE WAREHOUSE automated_intelligence_interactive_wh
+CREATE OR REPLACE INTERACTIVE WAREHOUSE hol_interactive_wh
   TABLES (customer_order_analytics, order_lookup)
   WAREHOUSE_SIZE = 'XSMALL';
 
-ALTER WAREHOUSE automated_intelligence_interactive_wh RESUME;
+ALTER WAREHOUSE IF EXISTS hol_interactive_wh RESUME IF SUSPENDED;
 
 
 -- ============================================================================
@@ -880,8 +783,8 @@ ALTER WAREHOUSE automated_intelligence_interactive_wh RESUME;
 -- ============================================================================
 
 -- Switch back to standard warehouse for DMF views (interactive warehouses can't query DMF results)
-USE WAREHOUSE automated_intelligence_wh;
-USE SCHEMA automated_intelligence.raw;
+USE WAREHOUSE hol_wh;
+USE SCHEMA dash_automated_intelligence_db.raw;
 
 -- Set DMF schedule to trigger on data changes
 ALTER TABLE orders SET DATA_METRIC_SCHEDULE = 'TRIGGER_ON_CHANGES';
@@ -908,14 +811,14 @@ ALTER TABLE order_items ADD DATA METRIC FUNCTION
 CREATE OR REPLACE VIEW vw_dq_monitoring_results AS
 SELECT * FROM TABLE(
   SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS(
-    REF_ENTITY_NAME => 'automated_intelligence.raw.orders',
+    REF_ENTITY_NAME => 'dash_automated_intelligence_db.raw.orders',
     REF_ENTITY_DOMAIN => 'table'
   )
 )
 UNION ALL
 SELECT * FROM TABLE(
   SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS(
-    REF_ENTITY_NAME => 'automated_intelligence.raw.order_items',
+    REF_ENTITY_NAME => 'dash_automated_intelligence_db.raw.order_items',
     REF_ENTITY_DOMAIN => 'table'
   )
 );
@@ -929,13 +832,13 @@ CREATE TABLE IF NOT EXISTS data_quality_alerts (
 
 -- Create alert to monitor data quality issues
 CREATE OR REPLACE ALERT data_quality_alert
-  WAREHOUSE = automated_intelligence_wh
+  WAREHOUSE = hol_wh
   SCHEDULE = '5 MINUTE'
   IF (EXISTS (
     SELECT 1
     FROM vw_dq_monitoring_results
     WHERE 
-      table_database = 'AUTOMATED_INTELLIGENCE'
+      table_database = 'DASH_AUTOMATED_INTELLIGENCE_DB'
       AND table_schema = 'RAW'
       AND table_name IN ('ORDERS', 'ORDER_ITEMS')
       AND metric_name = 'NULL_COUNT'
@@ -957,8 +860,8 @@ ALTER ALERT data_quality_alert RESUME;
 -- Purpose: Tables for AI SQL functions, semantic search, and Cortex Agent
 -- ============================================================================
 
-USE SCHEMA automated_intelligence.raw;
-USE WAREHOUSE automated_intelligence_wh;
+USE SCHEMA dash_automated_intelligence_db.raw;
+USE WAREHOUSE hol_wh;
 
 -- Product catalog with descriptions for semantic search
 CREATE TABLE IF NOT EXISTS product_catalog (
@@ -1025,9 +928,6 @@ WHEN NOT MATCHED THEN
   INSERT (product_id, product_name, product_category, description, features, price, stock_quantity)
   VALUES (s.product_id, s.product_name, s.product_category, s.description, s.features, s.price, s.stock_quantity);
 
--- Product reviews and support tickets can be generated via Snowpipe Streaming
--- No static inserts needed here
-
 -- ============================================================================
 -- STEP 7: Cortex Search Service (Act 3 - Intelligence & Governance)
 -- Purpose: Semantic search over product catalog for Snowflake Intelligence
@@ -1040,7 +940,7 @@ ALTER TABLE product_catalog SET CHANGE_TRACKING = TRUE;
 CREATE OR REPLACE CORTEX SEARCH SERVICE product_search_service
   ON description
   ATTRIBUTES product_name, product_category, features, price
-  WAREHOUSE = automated_intelligence_wh
+  WAREHOUSE = hol_wh
   TARGET_LAG = '1 hour'
   AS (
     SELECT
@@ -1054,8 +954,36 @@ CREATE OR REPLACE CORTEX SEARCH SERVICE product_search_service
     FROM product_catalog
   );
 
--- Verify Cortex Search Service
-SHOW CORTEX SEARCH SERVICES IN SCHEMA automated_intelligence.raw;
+-- Enable change tracking on reviews and tickets for Agent Search
+ALTER TABLE product_reviews SET CHANGE_TRACKING = TRUE;
+ALTER TABLE support_tickets SET CHANGE_TRACKING = TRUE;
+
+-- Multi-index Cortex Search for product reviews (Agent Search)
+CREATE OR REPLACE CORTEX SEARCH SERVICE product_reviews_search
+  TEXT INDEXES review_title
+  VECTOR INDEXES review_text (model = 'snowflake-arctic-embed-l-v2.0')
+  ATTRIBUTES product_id, customer_id, rating, review_date
+  WAREHOUSE = hol_wh
+  TARGET_LAG = '1 hour'
+AS (
+  SELECT review_id, product_id, customer_id, review_date, rating, review_title, review_text
+  FROM product_reviews
+);
+
+-- Multi-index Cortex Search for support tickets (Agent Search)
+CREATE OR REPLACE CORTEX SEARCH SERVICE support_tickets_search
+  TEXT INDEXES subject
+  VECTOR INDEXES description (model = 'snowflake-arctic-embed-l-v2.0')
+  ATTRIBUTES customer_id, ticket_date, category, priority, status
+  WAREHOUSE = hol_wh
+  TARGET_LAG = '1 hour'
+AS (
+  SELECT ticket_id, customer_id, ticket_date, category, priority, subject, description, resolution, status
+  FROM support_tickets
+);
+
+-- Verify Cortex Search Services
+SHOW CORTEX SEARCH SERVICES IN SCHEMA dash_automated_intelligence_db.raw;
 
 
 -- ============================================================================
@@ -1063,24 +991,24 @@ SHOW CORTEX SEARCH SERVICES IN SCHEMA automated_intelligence.raw;
 -- Purpose: SQL-based semantic layer for Cortex Analyst natural language queries
 -- ============================================================================
 
-USE SCHEMA automated_intelligence.semantic;
+USE SCHEMA dash_automated_intelligence_db.semantic;
 
 -- Create Semantic View for business analytics
 -- Note: Semantic Views use SQL syntax (not YAML) and enable natural language queries
 -- Clause order MUST be: TABLES → RELATIONSHIPS → FACTS → DIMENSIONS → METRICS
 CREATE OR REPLACE SEMANTIC VIEW business_analytics_semantic
 TABLES (
-    orders AS automated_intelligence.raw.orders
+    orders AS dash_automated_intelligence_db.raw.orders
         PRIMARY KEY (order_id)
         WITH SYNONYMS = ('sales', 'transactions', 'purchases')
         COMMENT = 'Customer orders with amounts and status',
     
-    customers AS automated_intelligence.raw.customers
+    customers AS dash_automated_intelligence_db.raw.customers
         PRIMARY KEY (customer_id)
         WITH SYNONYMS = ('buyers', 'clients', 'users')
         COMMENT = 'Customer master data with segments',
     
-    items AS automated_intelligence.raw.order_items
+    items AS dash_automated_intelligence_db.raw.order_items
         PRIMARY KEY (order_item_id)
         WITH SYNONYMS = ('line_items', 'order_details', 'products_ordered')
         COMMENT = 'Individual items within each order'
@@ -1153,150 +1081,117 @@ METRICS (
 COMMENT = 'Semantic layer for natural language business analytics queries';
 
 -- Verify Semantic View creation
-SHOW SEMANTIC VIEWS IN SCHEMA automated_intelligence.semantic;
+SHOW SEMANTIC VIEWS IN SCHEMA dash_automated_intelligence_db.semantic;
 DESCRIBE SEMANTIC VIEW business_analytics_semantic;
 
-
--- ============================================================================
--- STEP 9: SQL Features Reference (Standalone Demo Scripts)
--- Purpose: Reference to advanced SQL feature demonstrations
--- ============================================================================
--- The following SQL features have dedicated demo scripts in the repository.
--- These demonstrate cutting-edge Snowflake capabilities with working examples.
---
--- AI SQL Functions:
---   - sql-features/ai-sql-demo/ai_filter_demo.sql (AI_FILTER, AI_CLASSIFY)
---
--- New SQL Syntax (2024-2025):
---   - sql-features/pipe_operator_demo.sql (Pipe operator ->> with $1)
---   - sql-features/union_by_name_demo.sql (UNION BY NAME for schema evolution)
---   - sql-features/time_series_gap_fill_demo.sql (RESAMPLE clause)
---   - sql-features/async_sql_demo.sql (ASYNC procedures)
---   - sql-features/create_or_alter_demo.sql (CREATE OR ALTER DDL)
---
--- Semantic Views:
---   - snowflake-intelligence/semantic_view_sql_demo.sql (Full SQL syntax demo)
---
--- Infrastructure Features:
---   - sql-features/gen2-warehouse/gen2_optima_demo.sql (Gen2 + Optima Indexing)
---   - sql-features/data-quality/dmf_expectations_demo.sql (Data Metric Functions)
---   - iceberg/partitioned_writes_demo.sql (Iceberg tables + v3 preview)
---
--- ML & AI:
---   - sql-features/ml-models/huggingface_import_demo.sql (HuggingFace models)
---   - snowflake-intelligence/cortex_analyst_routing_demo.sql (Multi-agent routing)
---
--- See DEMO_SCRIPT.md "SQL FEATURES & REFERENCE DEMOS" section for full details.
--- ============================================================================
-
-
--- ============================================================================
--- Setup Complete! Infrastructure ready for Ingestion to Intelligence.
--- 
--- Next Steps:
---   1. Run Snowpipe Streaming to ingest data (Act 1)
---   2. Follow DEMO_SCRIPT.md for the full journey
---   3. See component READMEs for detailed instructions
---   4. Explore SQL Features demos in sql-features/ directory
---
--- Demo Flow:
---   Act 1: Ingest & Stage      → Demos 1-2 (Streaming, Gen2, Dynamic Tables)
---   Act 2: Serve & Analyze     → Demos 3-4 (Interactive Tables, dbt, ML)
---   Act 3: Intelligence        → Demos 5-6 (Snowflake Intelligence, RBAC)
---   Bonus: Open Lakehouse      → Demos 7-8 (Postgres, Iceberg)
---   SQL Features Reference     → 13 standalone demos (AI SQL, Pipe Operator, etc.)
--- ============================================================================
-
-TRUNCATE TABLE IF EXISTS automated_intelligence.raw.customers;
-TRUNCATE TABLE IF EXISTS automated_intelligence.raw.orders;
-TRUNCATE TABLE IF EXISTS automated_intelligence.raw.order_items;
-TRUNCATE TABLE IF EXISTS automated_intelligence.raw.data_quality_alerts;
-
-ALTER DYNAMIC TABLE automated_intelligence.dynamic_tables.enriched_orders REFRESH;
-ALTER DYNAMIC TABLE automated_intelligence.dynamic_tables.enriched_order_items REFRESH;
-ALTER DYNAMIC TABLE automated_intelligence.dynamic_tables.fact_orders REFRESH;
-ALTER DYNAMIC TABLE automated_intelligence.dynamic_tables.daily_business_metrics REFRESH;
-ALTER DYNAMIC TABLE automated_intelligence.dynamic_tables.product_performance_metrics REFRESH;
-
-SELECT 'Raw Tables' AS category, 'customers' AS table_name, COUNT(*) AS row_count 
-FROM automated_intelligence.raw.customers
-UNION ALL
-SELECT 'Raw Tables', 'orders', COUNT(*) 
-FROM automated_intelligence.raw.orders
-UNION ALL
-SELECT 'Raw Tables', 'order_items', COUNT(*) 
-FROM automated_intelligence.raw.order_items
-UNION ALL
-SELECT 'Raw Tables', 'data_quality_alerts', COUNT(*) 
-FROM automated_intelligence.raw.data_quality_alerts
-UNION ALL
-SELECT 'Dynamic Tables', 'enriched_orders', COUNT(*) 
-FROM automated_intelligence.dynamic_tables.enriched_orders
-UNION ALL
-SELECT 'Dynamic Tables', 'enriched_order_items', COUNT(*) 
-FROM automated_intelligence.dynamic_tables.enriched_order_items
-UNION ALL
-SELECT 'Dynamic Tables', 'fact_orders', COUNT(*) 
-FROM automated_intelligence.dynamic_tables.fact_orders
-UNION ALL
-SELECT 'Dynamic Tables', 'daily_business_metrics', COUNT(*) 
-FROM automated_intelligence.dynamic_tables.daily_business_metrics
-UNION ALL
-SELECT 'Dynamic Tables', 'product_performance_metrics', COUNT(*) 
-FROM automated_intelligence.dynamic_tables.product_performance_metrics
-ORDER BY category, table_name;
 
 -- ============================================================================
 -- Create Stages
 -- ============================================================================
 
--- Stage for Semantic Model Storage
--- This stage stores semantic model YAML files used by Cortex Analyst
--- for natural language to SQL translation.
-CREATE STAGE IF NOT EXISTS automated_intelligence.raw.semantic_models
+CREATE STAGE IF NOT EXISTS dash_automated_intelligence_db.raw.semantic_models
     DIRECTORY = (ENABLE = TRUE)
     COMMENT = 'Stage for storing semantic model YAML files for Cortex Analyst';
 
--- Stage for Streamlit Dashboard
--- This stage stores Streamlit application files for THE_DASHBOARD
-CREATE STAGE IF NOT EXISTS automated_intelligence.raw.the_dashboard_stage
+CREATE STAGE IF NOT EXISTS dash_automated_intelligence_db.raw.the_dashboard_stage
     DIRECTORY = (ENABLE = TRUE)
     COMMENT = 'Stage for Streamlit dashboard application files';
 
-SHOW STAGES IN automated_intelligence.raw;
+-- ============================================================================
+-- Load Seed Data from S3
+-- ============================================================================
+
+CREATE OR REPLACE FILE FORMAT dash_automated_intelligence_db.raw.csv_format
+    TYPE = 'CSV'
+    SKIP_HEADER = 1
+    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+    NULL_IF = ('');
+
+COPY INTO dash_automated_intelligence_db.raw.customers
+FROM 's3://sfquickstarts/summit_dev_day_2026_automated_intelligence_hol/customers.csv'
+FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.csv_format')
+ON_ERROR = 'CONTINUE';
+
+COPY INTO dash_automated_intelligence_db.raw.orders
+FROM 's3://sfquickstarts/summit_dev_day_2026_automated_intelligence_hol/orders.csv'
+FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.csv_format')
+ON_ERROR = 'CONTINUE';
+
+COPY INTO dash_automated_intelligence_db.raw.order_items
+FROM 's3://sfquickstarts/summit_dev_day_2026_automated_intelligence_hol/order_items.csv'
+FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.csv_format')
+ON_ERROR = 'CONTINUE';
+
+COPY INTO dash_automated_intelligence_db.raw.product_reviews
+FROM 's3://sfquickstarts/summit_dev_day_2026_automated_intelligence_hol/product_reviews.csv'
+FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.csv_format')
+ON_ERROR = 'CONTINUE';
+
+COPY INTO dash_automated_intelligence_db.raw.support_tickets
+FROM 's3://sfquickstarts/summit_dev_day_2026_automated_intelligence_hol/support_tickets.csv'
+FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.csv_format')
+ON_ERROR = 'CONTINUE';
 
 -- ============================================================================
--- Generate Initial Data
+-- Refresh Dynamic Tables (now that seed data is loaded)
 -- ============================================================================
--- Create customers for the system
--- Orders will be generated via Snowpipe Streaming (see optional setup below)
-SET NUM_CUSTOMERS = 500000;
 
-CALL automated_intelligence.raw.generate_customers($NUM_CUSTOMERS);
+ALTER DYNAMIC TABLE dash_automated_intelligence_db.dynamic_tables.enriched_orders REFRESH;
+ALTER DYNAMIC TABLE dash_automated_intelligence_db.dynamic_tables.enriched_order_items REFRESH;
+ALTER DYNAMIC TABLE dash_automated_intelligence_db.dynamic_tables.fact_orders REFRESH;
+ALTER DYNAMIC TABLE dash_automated_intelligence_db.dynamic_tables.daily_business_metrics REFRESH;
+ALTER DYNAMIC TABLE dash_automated_intelligence_db.dynamic_tables.product_performance_metrics REFRESH;
 
--- Note: Use Snowpipe Streaming to generate orders (see snowpipe-streaming-java or snowpipe-streaming-python)
+-- ============================================================================
+-- Verify Row Counts
+-- ============================================================================
+
+SELECT 'Raw Tables' AS category, 'customers' AS table_name, COUNT(*) AS row_count 
+FROM dash_automated_intelligence_db.raw.customers
+UNION ALL
+SELECT 'Raw Tables', 'orders', COUNT(*) 
+FROM dash_automated_intelligence_db.raw.orders
+UNION ALL
+SELECT 'Raw Tables', 'order_items', COUNT(*) 
+FROM dash_automated_intelligence_db.raw.order_items
+UNION ALL
+SELECT 'Raw Tables', 'product_reviews', COUNT(*) 
+FROM dash_automated_intelligence_db.raw.product_reviews
+UNION ALL
+SELECT 'Raw Tables', 'support_tickets', COUNT(*) 
+FROM dash_automated_intelligence_db.raw.support_tickets;
 
 -- ============================================================================
--- OPTIONAL SETUP SCRIPTS (Per-Act Configuration)
+-- STEP: Row Access Policy & West Coast Manager Role
+-- Purpose: Demonstrate region-based RBAC with the Business Insights Agent
 -- ============================================================================
--- Run these scripts based on which Acts you're demonstrating:
---
--- ACT 1: INGEST & STAGE
---   - snowpipe-streaming-java/setup_pipes.sql (Java SDK)
---   - snowpipe-streaming-python/recreate_pipes.sql (Python SDK)
---
--- ACT 2: SERVE & ANALYZE
---   - dbt-analytics/dbt_project.yml (dbt models)
---   - ml-training/ notebooks (GPU training)
---
--- ACT 3: INTELLIGENCE & GOVERNANCE
---   - security-and-governance/setup_west_coast_manager.sql (Row Access Policies)
---   - snowflake-intelligence/ (Cortex Agent configuration)
---
--- BONUS: OPEN LAKEHOUSE
---   - pg_lake/snowflake_export.sql (Iceberg export to S3)
---   - snowflake-postgres/ (Managed Postgres setup)
---   Requires: External volume 'aws_s3_ext_volume_snowflake' configured
---
--- See DEMO_SCRIPT.md for the complete Ingestion to Intelligence journey.
--- ============================================================================
+
+CREATE OR REPLACE ROLE WEST_COAST_MANAGER
+    COMMENT = 'Regional manager with access limited to CA, OR, and WA states only';
+
+SET current_user = (SELECT CURRENT_USER());
+GRANT ROLE WEST_COAST_MANAGER TO USER IDENTIFIER($current_user);
+
+GRANT USAGE ON DATABASE DASH_AUTOMATED_INTELLIGENCE_DB TO ROLE WEST_COAST_MANAGER;
+GRANT USAGE ON SCHEMA DASH_AUTOMATED_INTELLIGENCE_DB.RAW TO ROLE WEST_COAST_MANAGER;
+GRANT USAGE ON SCHEMA DASH_AUTOMATED_INTELLIGENCE_DB.DYNAMIC_TABLES TO ROLE WEST_COAST_MANAGER;
+GRANT USAGE ON WAREHOUSE HOL_WH TO ROLE WEST_COAST_MANAGER;
+
+GRANT SELECT ON ALL TABLES IN SCHEMA DASH_AUTOMATED_INTELLIGENCE_DB.RAW TO ROLE WEST_COAST_MANAGER;
+GRANT SELECT ON ALL DYNAMIC TABLES IN SCHEMA DASH_AUTOMATED_INTELLIGENCE_DB.DYNAMIC_TABLES TO ROLE WEST_COAST_MANAGER;
+
+USE DATABASE DASH_AUTOMATED_INTELLIGENCE_DB;
+USE SCHEMA RAW;
+
+CREATE OR REPLACE ROW ACCESS POLICY customers_region_policy
+AS (state VARCHAR) RETURNS BOOLEAN ->
+    CASE 
+        WHEN IS_ROLE_IN_SESSION('AUTOMATED_INTELLIGENCE_ADMIN') OR IS_ROLE_IN_SESSION('ACCOUNTADMIN') THEN TRUE
+        WHEN IS_ROLE_IN_SESSION('WEST_COAST_MANAGER') 
+             AND state IN ('CA', 'OR', 'WA') THEN TRUE
+        ELSE FALSE
+    END
+COMMENT = 'Restricts west_coast_manager to CA, OR, and WA states only';
+
+ALTER TABLE DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS 
+    ADD ROW ACCESS POLICY customers_region_policy ON (state);

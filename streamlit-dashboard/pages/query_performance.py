@@ -55,7 +55,7 @@ if st.session_state.test_running:
                 CUSTOMER_ID,
                 TOTAL_ORDERS as order_count,
                 TOTAL_SPENT
-            FROM AUTOMATED_INTELLIGENCE.INTERACTIVE.CUSTOMER_ORDER_ANALYTICS
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.INTERACTIVE.CUSTOMER_ORDER_ANALYTICS
             WHERE CUSTOMER_ID = {customer_id}
             """
             
@@ -64,8 +64,8 @@ if st.session_state.test_running:
                 c.customer_id,
                 COUNT(o.order_id) as order_count,
                 SUM(o.total_amount) as total_spent
-            FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS c
-            LEFT JOIN AUTOMATED_INTELLIGENCE.RAW.ORDERS o ON c.customer_id = o.customer_id
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS c
+            LEFT JOIN DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS o ON c.customer_id = o.customer_id
             WHERE c.customer_id = {customer_id}
             GROUP BY c.customer_id
             """
@@ -96,7 +96,7 @@ if st.session_state.test_running:
             # Get a sample of actual customer IDs that have orders
             sample_customers = session.sql("""
                 SELECT DISTINCT customer_id 
-                FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS 
+                FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS 
                 ORDER BY RANDOM() 
                 LIMIT 1000
             """).collect()

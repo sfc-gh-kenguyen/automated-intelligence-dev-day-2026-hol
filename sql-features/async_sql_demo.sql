@@ -11,7 +11,7 @@
 -- ============================================================================
 
 USE ROLE SNOWFLAKE_INTELLIGENCE_ADMIN;
-USE DATABASE AUTOMATED_INTELLIGENCE;
+USE DATABASE DASH_AUTOMATED_INTELLIGENCE_DB;
 USE WAREHOUSE AUTOMATED_INTELLIGENCE_WH;
 
 -- ============================================================================
@@ -19,7 +19,7 @@ USE WAREHOUSE AUTOMATED_INTELLIGENCE_WH;
 -- ============================================================================
 
 -- Simple procedure with parallel inserts
-CREATE OR REPLACE PROCEDURE AUTOMATED_INTELLIGENCE.RAW.demo_async_basic()
+CREATE OR REPLACE PROCEDURE DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_basic()
 RETURNS VARCHAR
 LANGUAGE SQL
 AS
@@ -39,22 +39,22 @@ BEGIN
 END;
 
 -- Test it
-CALL AUTOMATED_INTELLIGENCE.RAW.demo_async_basic();
+CALL DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_basic();
 
 -- ============================================================================
 -- PART 2: ASYNC with RESULTSET - Capture Results
 -- ============================================================================
 
 -- Procedure that runs queries concurrently and collects results
-CREATE OR REPLACE PROCEDURE AUTOMATED_INTELLIGENCE.RAW.demo_async_with_results()
+CREATE OR REPLACE PROCEDURE DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_with_results()
 RETURNS TABLE(metric VARCHAR, count_value INT)
 LANGUAGE SQL
 AS
 BEGIN
     -- Run queries asynchronously and capture results
-    LET orders_count RESULTSET := ASYNC (SELECT COUNT(*) AS cnt FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS);
-    LET customers_count RESULTSET := ASYNC (SELECT COUNT(*) AS cnt FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS);
-    LET products_count RESULTSET := ASYNC (SELECT COUNT(*) AS cnt FROM AUTOMATED_INTELLIGENCE.RAW.PRODUCT_CATALOG);
+    LET orders_count RESULTSET := ASYNC (SELECT COUNT(*) AS cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS);
+    LET customers_count RESULTSET := ASYNC (SELECT COUNT(*) AS cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS);
+    LET products_count RESULTSET := ASYNC (SELECT COUNT(*) AS cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.PRODUCT_CATALOG);
     
     -- Wait for each and store results
     AWAIT orders_count;
@@ -88,14 +88,14 @@ BEGIN
 END;
 
 -- Test it
-CALL AUTOMATED_INTELLIGENCE.RAW.demo_async_with_results();
+CALL DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_with_results();
 
 -- ============================================================================
 -- PART 3: ASYNC in Loops - Dynamic Parallel Processing
 -- ============================================================================
 
 -- Process multiple customers in parallel
-CREATE OR REPLACE PROCEDURE AUTOMATED_INTELLIGENCE.RAW.demo_async_loop()
+CREATE OR REPLACE PROCEDURE DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_loop()
 RETURNS VARCHAR
 LANGUAGE SQL
 EXECUTE AS CALLER
@@ -107,7 +107,7 @@ BEGIN
     -- Get sample customers
     LET customers RESULTSET := (
         SELECT customer_id 
-        FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS 
+        FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS 
         WHERE customer_segment = 'Premium' 
         LIMIT 10
     );
@@ -118,7 +118,7 @@ BEGIN
         ASYNC (
             INSERT INTO customer_order_counts 
             SELECT :cid, COUNT(*) 
-            FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS 
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS 
             WHERE customer_id = :cid
         );
     END FOR;
@@ -130,46 +130,46 @@ BEGIN
 END;
 
 -- Test it
-CALL AUTOMATED_INTELLIGENCE.RAW.demo_async_loop();
+CALL DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_loop();
 
 -- ============================================================================
 -- PART 4: Nested Async Procedures
 -- ============================================================================
 
 -- Create helper procedures
-CREATE OR REPLACE PROCEDURE AUTOMATED_INTELLIGENCE.RAW.demo_async_helper_orders()
+CREATE OR REPLACE PROCEDURE DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_helper_orders()
 RETURNS VARCHAR
 LANGUAGE SQL
 AS
 BEGIN
     CREATE OR REPLACE TEMP TABLE order_summary AS
     SELECT DATE_TRUNC('month', order_date) AS month, COUNT(*) AS orders
-    FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
     GROUP BY month;
     RETURN 'Orders summarized';
 END;
 
-CREATE OR REPLACE PROCEDURE AUTOMATED_INTELLIGENCE.RAW.demo_async_helper_customers()
+CREATE OR REPLACE PROCEDURE DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_helper_customers()
 RETURNS VARCHAR
 LANGUAGE SQL
 AS
 BEGIN
     CREATE OR REPLACE TEMP TABLE customer_summary AS
     SELECT customer_segment, COUNT(*) AS customers
-    FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS
     GROUP BY customer_segment;
     RETURN 'Customers summarized';
 END;
 
 -- Main procedure that calls helpers in parallel
-CREATE OR REPLACE PROCEDURE AUTOMATED_INTELLIGENCE.RAW.demo_async_nested()
+CREATE OR REPLACE PROCEDURE DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_nested()
 RETURNS VARCHAR
 LANGUAGE SQL
 AS
 BEGIN
     -- Run child procedures asynchronously
-    ASYNC (CALL AUTOMATED_INTELLIGENCE.RAW.demo_async_helper_orders());
-    ASYNC (CALL AUTOMATED_INTELLIGENCE.RAW.demo_async_helper_customers());
+    ASYNC (CALL DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_helper_orders());
+    ASYNC (CALL DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_helper_customers());
     
     -- Wait for both
     AWAIT ALL;
@@ -178,14 +178,14 @@ BEGIN
 END;
 
 -- Test it
-CALL AUTOMATED_INTELLIGENCE.RAW.demo_async_nested();
+CALL DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_nested();
 
 -- ============================================================================
 -- PART 5: ASYNC with Updates
 -- ============================================================================
 
 -- Parallel updates pattern
-CREATE OR REPLACE PROCEDURE AUTOMATED_INTELLIGENCE.RAW.demo_async_updates()
+CREATE OR REPLACE PROCEDURE DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_updates()
 RETURNS VARCHAR
 LANGUAGE SQL
 AS
@@ -205,14 +205,14 @@ BEGIN
 END;
 
 -- Test it
-CALL AUTOMATED_INTELLIGENCE.RAW.demo_async_updates();
+CALL DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_updates();
 
 -- ============================================================================
 -- PART 6: Error Handling
 -- ============================================================================
 
 -- When an async job fails, AWAIT raises an exception
-CREATE OR REPLACE PROCEDURE AUTOMATED_INTELLIGENCE.RAW.demo_async_error_handling()
+CREATE OR REPLACE PROCEDURE DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_error_handling()
 RETURNS VARCHAR
 LANGUAGE SQL
 AS
@@ -229,7 +229,7 @@ BEGIN
 END;
 
 -- Test it
-CALL AUTOMATED_INTELLIGENCE.RAW.demo_async_error_handling();
+CALL DASH_AUTOMATED_INTELLIGENCE_DB.RAW.demo_async_error_handling();
 
 -- ============================================================================
 -- Key Takeaways

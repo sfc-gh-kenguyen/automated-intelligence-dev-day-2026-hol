@@ -12,7 +12,7 @@
 -- ============================================================================
 
 USE ROLE SNOWFLAKE_INTELLIGENCE_ADMIN;
-USE DATABASE AUTOMATED_INTELLIGENCE;
+USE DATABASE DASH_AUTOMATED_INTELLIGENCE_DB;
 USE WAREHOUSE AUTOMATED_INTELLIGENCE_GEN2_WH;  -- Must use Gen2 warehouse
 
 -- ============================================================================
@@ -44,8 +44,8 @@ SELECT
     order_date,
     total_amount,
     order_status
-FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
-WHERE order_id = (SELECT order_id FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS LIMIT 1);
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
+WHERE order_id = (SELECT order_id FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS LIMIT 1);
 
 -- Point lookup by customer_id
 SELECT 
@@ -54,7 +54,7 @@ SELECT
     last_name,
     customer_segment,
     state
-FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS
 WHERE customer_id = 5000;
 
 -- Multiple point lookups (batch pattern)
@@ -62,7 +62,7 @@ SELECT
     order_id,
     customer_id,
     total_amount
-FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
 WHERE customer_id IN (5000, 5001, 5002, 5003, 5004);
 
 -- ============================================================================
@@ -99,7 +99,7 @@ SELECT
     first_name,
     last_name,
     customer_segment
-FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS
 WHERE customer_id = 5000;
 
 -- Switch back to Gen2 and run same query
@@ -110,7 +110,7 @@ SELECT
     first_name,
     last_name,
     customer_segment
-FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS
 WHERE customer_id = 5000;
 
 -- Compare query times in QUERY_HISTORY

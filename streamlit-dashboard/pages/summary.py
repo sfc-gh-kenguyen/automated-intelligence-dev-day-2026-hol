@@ -14,33 +14,33 @@ def render_summary_dashboard(schema: str, orders_table: str, order_items_table: 
         col1, col2, col3, col4, col5 = st.columns(5)
 
         alltime_orders_query = f"""
-        SELECT COUNT(*) as cnt FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table}
+        SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
         """
         alltime_orders_result = session.sql(alltime_orders_query).collect()
         alltime_orders = alltime_orders_result[0]['CNT'] if alltime_orders_result else 0
 
         alltime_items_query = f"""
-        SELECT COUNT(*) as cnt FROM AUTOMATED_INTELLIGENCE.{schema}.{order_items_table}
+        SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table}
         """
         alltime_items_result = session.sql(alltime_items_query).collect()
         alltime_items = alltime_items_result[0]['CNT'] if alltime_items_result else 0
 
         alltime_customers_query = """
-        SELECT COUNT(*) as cnt FROM AUTOMATED_INTELLIGENCE.RAW.CUSTOMERS
+        SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS
         """
         alltime_customers_result = session.sql(alltime_customers_query).collect()
         alltime_customers = alltime_customers_result[0]['CNT'] if alltime_customers_result else 0
 
         alltime_revenue_query = f"""
         SELECT ROUND(SUM(total_amount), 2) as total_revenue
-        FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table}
+        FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
         """
         alltime_revenue_result = session.sql(alltime_revenue_query).collect()
         alltime_revenue = alltime_revenue_result[0]['TOTAL_REVENUE'] if alltime_revenue_result and alltime_revenue_result[0]['TOTAL_REVENUE'] is not None else 0
 
         alltime_products_query = f"""
         SELECT COUNT(DISTINCT product_id) as cnt 
-        FROM AUTOMATED_INTELLIGENCE.{schema}.{order_items_table}
+        FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table}
         """
         alltime_products_result = session.sql(alltime_products_query).collect()
         alltime_products = alltime_products_result[0]['CNT'] if alltime_products_result else 0
@@ -62,7 +62,7 @@ def render_summary_dashboard(schema: str, orders_table: str, order_items_table: 
             SELECT 
                 ORDER_STATUS,
                 COUNT(*) as order_count
-            FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table}
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
             GROUP BY ORDER_STATUS
             ORDER BY order_count DESC
             """
@@ -83,7 +83,7 @@ def render_summary_dashboard(schema: str, orders_table: str, order_items_table: 
             SELECT 
                 oi.product_category,
                 SUM(oi.line_total) as total_revenue
-            FROM AUTOMATED_INTELLIGENCE.{schema}.{order_items_table} oi
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table} oi
             GROUP BY oi.product_category
             ORDER BY total_revenue DESC
             """
@@ -112,8 +112,8 @@ def render_summary_dashboard(schema: str, orders_table: str, order_items_table: 
             END AS order_size,
             oi.product_category,
             SUM(oi.line_total) as revenue
-        FROM AUTOMATED_INTELLIGENCE.{schema}.{orders_table} o
-        JOIN AUTOMATED_INTELLIGENCE.{schema}.{order_items_table} oi ON o.order_id = oi.order_id
+        FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table} o
+        JOIN DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table} oi ON o.order_id = oi.order_id
         GROUP BY order_size, oi.product_category
         ORDER BY 
             CASE order_size

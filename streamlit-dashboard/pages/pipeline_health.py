@@ -32,7 +32,7 @@ with st.expander("ℹ️ About Dynamic Tables", expanded=False):
 
 # First check if there's any data in source tables
 source_check_query = """
-SELECT COUNT(*) as order_count FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+SELECT COUNT(*) as order_count FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
 """
 source_result = session.sql(source_check_query).collect()
 source_has_data = source_result[0]['ORDER_COUNT'] > 0
@@ -41,7 +41,7 @@ if not source_has_data:
     st.warning("⚠️ No data available in source tables. Stream data first using Snowpipe Streaming to populate Dynamic Tables.")
 else:
     dt_status_query = """
-    SHOW DYNAMIC TABLES IN AUTOMATED_INTELLIGENCE.DYNAMIC_TABLES
+    SHOW DYNAMIC TABLES IN DASH_AUTOMATED_INTELLIGENCE_DB.DYNAMIC_TABLES
     """
     
     try:
@@ -122,7 +122,7 @@ SELECT
     ROUND(AVG(total_orders), 2) as avg_orders_per_customer,
     ROUND(SUM(total_spent), 2) as total_revenue,
     COUNT(DISTINCT customer_id) as total_customers
-FROM AUTOMATED_INTELLIGENCE.INTERACTIVE.CUSTOMER_ORDER_ANALYTICS
+FROM DASH_AUTOMATED_INTELLIGENCE_DB.INTERACTIVE.CUSTOMER_ORDER_ANALYTICS
 """
 
 try:

@@ -94,9 +94,9 @@ vars:
 ## Setup
 
 ### Prerequisites
-1. Snowflake account with `AUTOMATED_INTELLIGENCE` role and necessary privileges
+1. Snowflake account with `AUTOMATED_INTELLIGENCE_ADMIN` role and necessary privileges
 2. Database and schemas created (`dbt_staging`, `dbt_analytics`)
-3. Raw data tables populated in `automated_intelligence.raw` schema with segment-based orders (Premium, Standard, Basic)
+3. Raw data tables populated in `dash_automated_intelligence_db.raw` schema with segment-based orders (Premium, Standard, Basic)
 4. Snowflake CLI installed (for deployment) - [Installation Guide](https://docs.snowflake.com/en/developer-guide/snowflake-cli/index)
 
 ### Deployment Options
@@ -201,7 +201,7 @@ SELECT
     behavioral_segment,
     COUNT(*) as customer_count,
     SUM(total_revenue) as segment_revenue
-FROM automated_intelligence.dbt_analytics.customer_segmentation
+FROM dash_automated_intelligence_db.dbt_analytics.customer_segmentation
 GROUP BY behavioral_segment
 ORDER BY segment_revenue DESC;
 
@@ -212,7 +212,7 @@ SELECT
     confidence,
     lift,
     recommendation_message
-FROM automated_intelligence.dbt_analytics.product_recommendations
+FROM dash_automated_intelligence_db.dbt_analytics.product_recommendations
 WHERE source_product_id = 'PROD_001'
 ORDER BY recommendation_rank;
 
@@ -222,7 +222,7 @@ SELECT
     months_since_signup,
     retention_rate,
     cohort_health
-FROM automated_intelligence.dbt_analytics.monthly_cohorts
+FROM dash_automated_intelligence_db.dbt_analytics.monthly_cohorts
 WHERE cohort_month >= '2024-01-01'
 ORDER BY cohort_month, months_since_signup;
 ```
@@ -256,14 +256,14 @@ See [DEPLOYMENT.md](DEPLOYMENT.md#scheduling--automation) for comprehensive sche
 
 **Option 1: Simple Daily Refresh**
 ```sql
-CREATE OR REPLACE TASK automated_intelligence.dbt_staging.dbt_daily_refresh
+CREATE OR REPLACE TASK dash_automated_intelligence_db.dbt_staging.dbt_daily_refresh
   WAREHOUSE = automated_intelligence_wh
   SCHEDULE = 'USING CRON 0 2 * * * America/Los_Angeles'
 AS
-  EXECUTE DBT PROJECT automated_intelligence.dbt_staging.automated_intelligence_dbt_project
+  EXECUTE DBT PROJECT dash_automated_intelligence_db.dbt_staging.automated_intelligence_dbt_project
     ARGS = 'run --target prod';
 
-ALTER TASK automated_intelligence.dbt_staging.dbt_daily_refresh RESUME;
+ALTER TASK dash_automated_intelligence_db.dbt_staging.dbt_daily_refresh RESUME;
 ```
 
 **Option 2: Orchestration Tool (Airflow/etc.)**

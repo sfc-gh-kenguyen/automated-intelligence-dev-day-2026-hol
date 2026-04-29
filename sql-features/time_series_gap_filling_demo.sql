@@ -12,7 +12,7 @@
 -- ============================================================================
 
 USE ROLE SNOWFLAKE_INTELLIGENCE_ADMIN;
-USE DATABASE AUTOMATED_INTELLIGENCE;
+USE DATABASE DASH_AUTOMATED_INTELLIGENCE_DB;
 USE WAREHOUSE AUTOMATED_INTELLIGENCE_WH;
 
 -- ============================================================================
@@ -177,7 +177,7 @@ WITH daily_orders AS (
         DATE_TRUNC('day', order_date)::TIMESTAMP AS order_day,
         COUNT(*) AS order_count,
         SUM(total_amount) AS daily_revenue
-    FROM AUTOMATED_INTELLIGENCE.RAW.ORDERS
+    FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.ORDERS
     WHERE order_date >= '2025-01-01' AND order_date < '2025-02-01'
     GROUP BY order_day
 )

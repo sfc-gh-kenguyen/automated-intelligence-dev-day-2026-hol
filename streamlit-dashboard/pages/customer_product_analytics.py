@@ -23,7 +23,7 @@ with tab1:
         # Check if DBT_ANALYTICS schema exists
         schema_check = session.sql("""
             SELECT COUNT(*) as schema_exists 
-            FROM AUTOMATED_INTELLIGENCE.INFORMATION_SCHEMA.SCHEMATA 
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.INFORMATION_SCHEMA.SCHEMATA 
             WHERE SCHEMA_NAME = 'DBT_ANALYTICS'
         """).to_pandas()
         
@@ -40,7 +40,7 @@ with tab1:
                 AVG(total_orders) as avg_orders,
                 AVG(rfm_score) as avg_rfm_score,
                 SUM(total_revenue) as total_revenue_sum
-            FROM AUTOMATED_INTELLIGENCE.DBT_ANALYTICS.CUSTOMER_LIFETIME_VALUE
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.DBT_ANALYTICS.CUSTOMER_LIFETIME_VALUE
             GROUP BY value_tier, customer_status
             ORDER BY customer_count DESC
             """
@@ -161,7 +161,7 @@ with tab1:
                     value_tier,
                     customer_status,
                     days_since_last_order
-                FROM AUTOMATED_INTELLIGENCE.DBT_ANALYTICS.CUSTOMER_LIFETIME_VALUE
+                FROM DASH_AUTOMATED_INTELLIGENCE_DB.DBT_ANALYTICS.CUSTOMER_LIFETIME_VALUE
                 ORDER BY total_revenue DESC
                 LIMIT 20
                 """
@@ -190,7 +190,7 @@ with tab2:
         # Check if DBT_ANALYTICS schema exists
         schema_check = session.sql("""
             SELECT COUNT(*) as schema_exists 
-            FROM AUTOMATED_INTELLIGENCE.INFORMATION_SCHEMA.SCHEMATA 
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.INFORMATION_SCHEMA.SCHEMATA 
             WHERE SCHEMA_NAME = 'DBT_ANALYTICS'
         """).to_pandas()
         
@@ -209,7 +209,7 @@ with tab2:
                 confidence_a_to_b,
                 affinity_strength,
                 recommendation_priority
-            FROM AUTOMATED_INTELLIGENCE.DBT_ANALYTICS.PRODUCT_AFFINITY
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.DBT_ANALYTICS.PRODUCT_AFFINITY
             ORDER BY lift DESC, times_bought_together DESC
             LIMIT 100
             """
