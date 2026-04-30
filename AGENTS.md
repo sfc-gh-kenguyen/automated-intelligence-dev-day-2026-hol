@@ -8,7 +8,7 @@
 
 ```
 setup.sql                      ← Root DDL: creates all shared infrastructure
-ai-sql-demo/                   ← AI SQL functions (AI_FILTER, AI_CLASSIFY)
+cortex-ai-functions-demo/                   ← Cortex AI functions (AI_FILTER, AI_CLASSIFY)
 data-quality/                  ← Data Metric Functions (DMF) demo
 dbt-analytics/                 ← dbt project (staging + mart models)
 gen2-warehouse/                ← Gen2 warehouse + Optima Indexing

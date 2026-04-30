@@ -856,7 +856,7 @@ ALTER ALERT data_quality_alert RESUME;
 
 -- ============================================================================
 -- STEP 6: AI/ML Infrastructure (Act 3 - Intelligence & Governance)
--- Purpose: Tables for AI SQL functions, semantic search, and Cortex Agent
+-- Purpose: Tables for Cortex AI functions, semantic search, and Cortex Agent
 -- ============================================================================
 
 USE SCHEMA dash_automated_intelligence_db.raw;

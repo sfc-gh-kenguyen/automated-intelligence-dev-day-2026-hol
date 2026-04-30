@@ -1,5 +1,5 @@
 -- ============================================================================
--- AI SQL Functions Demo - AI_FILTER, AI_CLASSIFY, AI_AGG
+-- Cortex AI Functions Demo - AI_FILTER, AI_CLASSIFY, AI_AGG
 -- ============================================================================
 -- Demonstrates Snowflake's AI-powered SQL functions (GA Jan 2026)
 -- These functions enable intelligent data filtering and classification
@@ -151,4 +151,4 @@ LIMIT 20;
 -- ============================================================================
 -- Demo Complete
 -- ============================================================================
-SELECT '✅ AI SQL Functions Demo Complete!' AS status;
+SELECT '✅ Cortex AI Functions Demo Complete!' AS status;

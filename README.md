@@ -7,18 +7,18 @@
 
 ## Overview
 
-In this hands-on lab, you'll build a complete AI-powered retail analytics platform entirely within Snowflake — no external infrastructure required. Using Cortex Code as your AI-assisted development environment, you'll work through the full data lifecycle: stream real-time orders via Snowpipe Streaming, MERGE them into production tables with Gen2 Warehouses, transform them through a 3-tier Dynamic Tables pipeline, and serve them with Interactive Tables for low-latency point lookups. You'll build batch analytical models (customer lifetime value, segmentation, product affinity) with dbt, monitor data quality with Data Metric Functions, explore Iceberg V3 features (deletion vectors, row lineage), and classify unstructured data with AI SQL functions. Tie it all together with Snowflake Intelligence — a conversational AI interface powered by Agent Search (multi-index Cortex Search) that orchestrates Cortex Analyst and Cortex Search to answer "what happened" and "why" from both structured and unstructured data. Finish with row-level security that transparently governs who sees what — even when querying through an AI agent.
+In this hands-on lab, you'll build a complete AI-powered retail analytics platform entirely within Snowflake — no external infrastructure required. Using Cortex Code as your AI-assisted development environment, you'll work through the full data lifecycle: stream real-time orders via Snowpipe Streaming, MERGE them into production tables with Gen2 Warehouses, transform them through a 3-tier Dynamic Tables pipeline, and serve them with Interactive Tables for low-latency point lookups. You'll build analytical models with dbt, monitor data quality with Data Metric Functions, explore Iceberg V3 features (deletion vectors, row lineage), and classify unstructured data with Cortex AI functions. Tie it all together with Snowflake Intelligence — a conversational AI interface where a Cortex Agent orchestrates Cortex Analyst (text-to-SQL via a semantic view with verified queries) and Agent Search (multi-index Cortex Search across reviews, tickets, and products) to answer "what happened" and "why" from both structured and unstructured data. Finish with row-level security that transparently governs who sees what — even when querying through an AI agent.
 
 ### What You'll Learn
 
 - Accelerate development with Cortex Code (AI-assisted SQL, deployment, and data exploration)
 - Stream real-time data with Snowpipe Streaming and transform with Dynamic Tables
 - Serve low-latency queries with Interactive Tables and Gen2 Warehouses
-- Build analytical models (CLV, segmentation, cohorts) with dbt
+- Build analytical models with dbt
 - Monitor data quality automatically with Data Metric Functions
 - Create and query managed Iceberg V3 tables (deletion vectors, row lineage)
-- Classify and filter data with AI SQL functions (AI_CLASSIFY, AI_FILTER)
-- Build conversational AI with Snowflake Intelligence and Agent Search (multi-index Cortex Search)
+- Classify and filter data with Cortex AI functions (AI_CLASSIFY, AI_FILTER)
+- Build a Cortex Agent with Cortex Analyst (semantic view + verified queries) and Agent Search (multi-index Cortex Search)
 - Implement transparent row-level security with Row Access Policies
 
 ```
@@ -327,7 +327,7 @@ Follow up:
 
 ---
 
-### Section 9: AI SQL Functions (5 min) — COCO
+### Section 9: Cortex AI Functions (5 min) — COCO
 
 > **Prompt CoCo:**  
 > *"Run sentiment analysis on the product reviews using AI_CLASSIFY — show me 5 reviews with their predicted sentiment"*
@@ -337,7 +337,7 @@ CoCo will write and execute AI function SQL against `product_reviews`.
 Also try:
 > *"Use AI_FILTER to find product catalog items suitable for beginners"*
 
-See: `ai-sql-demo/ai_filter_demo.sql`
+See: `cortex-ai-functions-demo/ai_filter_demo.sql`
 
 ---
 
@@ -404,14 +404,14 @@ Open in Snowsight to see all the data flowing through the system — live ingest
 | 6. Interactive Tables | MANUAL | 5 min | Point lookups in Snowsight |
 | 7. Data Quality | COCO | 5 min | DMF monitoring results |
 | 8. dbt Analytics | COCO | 10 min | Build models |
-| 9. AI SQL | COCO | 5 min | AI_CLASSIFY, AI_FILTER |
+| 9. Cortex AI | COCO | 5 min | AI_CLASSIFY, AI_FILTER |
 | 10. Intelligence | COCO | 10 min | Agent creation + NL queries |
 | 11. Security | COCO | 5 min | RBAC role contrast |
 | 12. Streamlit | COCO | 5 min | Deploy dashboard |
 | | | **~87 min** | |
 
 **Manual: 4 sections** (setup, streaming, interactive, CoCo install)  
-**CoCo: 9 sections** (Gen2, DTs, Iceberg, DQ, dbt, AI SQL, Intelligence, Security, Streamlit)
+**CoCo: 9 sections** (Gen2, DTs, Iceberg, DQ, dbt, Cortex AI, Intelligence, Security, Streamlit)
 
 ---
 
@@ -433,7 +433,7 @@ DROP ROLE IF EXISTS west_coast_manager;
 
 ```
 setup.sql                      <- Run first (creates all shared infrastructure)
-ai-sql-demo/                   <- AI_FILTER, AI_CLASSIFY demos
+cortex-ai-functions-demo/                   <- AI_FILTER, AI_CLASSIFY demos
 data-quality/                  <- Data Metric Functions demo
 dbt-analytics/                 <- dbt project (staging + mart models)
 gen2-warehouse/                <- Gen2 + Optima Indexing demo
