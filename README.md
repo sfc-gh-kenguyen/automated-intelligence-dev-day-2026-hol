@@ -346,15 +346,15 @@ See: `ai-sql-demo/ai_filter_demo.sql`
 > **Prompt CoCo:**  
 > *"Run snowflake-intelligence/create_agent.sql to create the Business Insights Agent"*
 
-Then test the agent with its sample questions:
+Then test the agent with its sample questions — each demonstrates different tool routing:
 
-> *"Ask the agent: What was our total revenue in December 2025 vs February 2026?"*
-
-> *"Ask the agent: Why are customers returning ski boots?"*
-
-> *"Ask the agent: Revenue dropped in February — what caused it and what do reviews say?"*
-
-> *"Ask the agent: Find reviews mentioning wrong size with a rating below 3"*
+| # | Question | Tools Used |
+|---|----------|-----------|
+| 1 | "Show me monthly revenue trend from June 2025 to April 2026" | Cortex Analyst (text-to-SQL) → chart |
+| 2 | "Revenue dropped in February — what caused it and what do reviews say?" | Cortex Analyst + Agent Search (what→why) |
+| 3 | "Find reviews mentioning wrong size with a rating below 3" | Cortex Search (single index: reviews) |
+| 4 | "Why are customers returning ski boots?" | Agent Search (multi-index: tickets + reviews) |
+| 5 | "What is our total revenue and customer count by state?" | Cortex Analyst (text-to-SQL) |
 
 This is the **capstone moment** — the agent routes across structured data (text-to-SQL) and unstructured data (Cortex Search) to answer "what happened" and "why."
 

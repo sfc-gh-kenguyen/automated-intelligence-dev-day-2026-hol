@@ -19,13 +19,13 @@ CREATE OR REPLACE AGENT DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHT
   COMMENT = 'Multi-tool business insights agent with text-to-SQL and Agent Search'
 FROM SPECIFICATION $$
 instructions:
-  orchestration: "You are a business insights assistant for an outdoor sports equipment company selling skis, snowboards, boots, and accessories. Route questions about revenue, orders, customers, segments, discounts, and business metrics to query_business_data. Route questions about product reviews, customer feedback, ratings, or sentiment to search_reviews. Route questions about support tickets, complaints, returns, or shipping issues to search_tickets. When a user asks WHY something happened (e.g. revenue dropped), combine structured data from query_business_data with unstructured insights from search_reviews and search_tickets to provide a complete answer."
+  orchestration: "You are a business insights assistant for an outdoor sports equipment company selling skis, snowboards, boots, and accessories. Route questions about revenue, orders, customers, segments, discounts, and business metrics to query_business_data. Route questions about product reviews, customer feedback, ratings, or sentiment to search_reviews. Route questions about support tickets, complaints, returns, or shipping issues to search_tickets. Route questions about product details, features, pricing, or catalog to search_products. When a user asks WHY something happened (e.g. revenue dropped), combine structured data from query_business_data with unstructured insights from search_reviews and search_tickets to provide a complete answer."
   response: "Be concise and data-driven. Always cite specific numbers from query results. When presenting search results, include relevant context like ratings, dates, and categories. Format currency values with $ and two decimal places. When combining multiple tool results, clearly connect the structured findings (what happened) with unstructured findings (why it happened)."
   sample_questions:
-    - question: "What was our total revenue in December 2025 vs February 2026?"
-    - question: "Why are customers returning ski boots?"
+    - question: "Show me monthly revenue trend from June 2025 to April 2026"
     - question: "Revenue dropped in February — what caused it and what do reviews say?"
     - question: "Find reviews mentioning wrong size with a rating below 3"
+    - question: "Why are customers returning ski boots?"
     - question: "What is our total revenue and customer count by state?"
 
 tools:
@@ -42,17 +42,22 @@ tools:
       name: "search_tickets"
       description: "Semantic search over customer support tickets. Use for finding tickets about returns, shipping delays, sizing issues, product defects, or any customer complaints."
   - tool_spec:
-      type: "data_to_chart"
-      name: "visualize"
-      description: "Generate charts and visualizations from query results. Use when the user asks to see data visually, plot trends, or create charts."
+      type: "cortex_search"
+      name: "search_products"
+      description: "Search the product catalog for product details, descriptions, features, pricing, and categories. Use for questions about what products are available, product specs, or product comparisons."
 
 tool_resources:
   query_business_data:
     semantic_view: "DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_ANALYTICS_SEMANTIC"
+    execution_environment:
+      type: "warehouse"
+      warehouse: "HOL_WH"
   search_reviews:
     search_service: "DASH_AUTOMATED_INTELLIGENCE_DB.RAW.PRODUCT_REVIEWS_SEARCH"
   search_tickets:
     search_service: "DASH_AUTOMATED_INTELLIGENCE_DB.RAW.SUPPORT_TICKETS_SEARCH"
+  search_products:
+    search_service: "DASH_AUTOMATED_INTELLIGENCE_DB.RAW.PRODUCT_SEARCH_SERVICE"
 $$;
 
 SHOW AGENTS LIKE 'BUSINESS_INSIGHTS_AGENT' IN SCHEMA DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC;
@@ -61,13 +66,13 @@ SHOW AGENTS LIKE 'BUSINESS_INSIGHTS_AGENT' IN SCHEMA DASH_AUTOMATED_INTELLIGENCE
 -- STEP 2: Test Agent with sample questions
 -- ============================================================================
 
--- Q1: "What" question (text-to-SQL)
+-- Q1: "What" question + chart (text-to-SQL, trend visualization)
 SELECT TRY_PARSE_JSON(
   SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
     'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT',
-    $${ "messages": [{"role": "user", "content": [{"type": "text", "text": "What was our total revenue in December 2025 vs February 2026?"}]}], "stream": false }$$
+    $${ "messages": [{"role": "user", "content": [{"type": "text", "text": "Show me monthly revenue trend from June 2025 to April 2026"}]}], "stream": false }$$
   )
-) AS q1_revenue_comparison;
+) AS q1_revenue_trend;
 
 -- Q2: "Why" question (search)
 SELECT TRY_PARSE_JSON(

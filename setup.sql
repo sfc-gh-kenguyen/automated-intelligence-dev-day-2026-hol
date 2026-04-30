@@ -21,7 +21,6 @@
 --
 -- IMPORTANT: Run PREREQUISITES section first as ACCOUNTADMIN, then the rest
 -- ============================================================================
-
 -- ============================================================================
 -- PREREQUISITES: ACCOUNTADMIN GRANTS (Run as ACCOUNTADMIN first)
 -- ============================================================================
@@ -1053,6 +1052,10 @@ DIMENSIONS (
     customers.last_name AS last_name
         COMMENT = 'Customer last name',
     
+    customers.state AS state
+        WITH SYNONYMS = ('region', 'location', 'geography')
+        COMMENT = 'US state where the customer is located',
+    
     items.product_category AS product_category
         WITH SYNONYMS = ('category', 'product_type', 'item_category')
         COMMENT = 'Product category classification'
@@ -1078,7 +1081,52 @@ METRICS (
         WITH SYNONYMS = ('item_revenue', 'product_revenue', 'line_item_sales')
         COMMENT = 'Sum of all line item totals'
 )
-COMMENT = 'Semantic layer for natural language business analytics queries';
+COMMENT = 'Semantic layer for natural language business analytics queries'
+
+AI_VERIFIED_QUERIES (
+    monthly_revenue_trend AS (
+        QUESTION 'Show me monthly revenue trend from June 2025 to April 2026'
+        VERIFIED_AT 1772645863
+        ONBOARDING_QUESTION TRUE
+        VERIFIED_BY '(STEWARD = dash)'
+        SQL 'SELECT
+                 DATE_TRUNC(''month'', o.order_date) AS month,
+                 SUM(o.total_amount) AS total_revenue
+             FROM orders AS o
+             WHERE o.order_date >= ''2025-06-01''
+               AND o.order_date < ''2026-05-01''
+             GROUP BY DATE_TRUNC(''month'', o.order_date)
+             ORDER BY month'
+    ),
+    revenue_and_customers_by_state AS (
+        QUESTION 'What is our total revenue and customer count by state?'
+        VERIFIED_AT 1772645863
+        ONBOARDING_QUESTION TRUE
+        VERIFIED_BY '(STEWARD = dash)'
+        SQL 'SELECT
+                 c.state,
+                 SUM(o.total_amount) AS total_revenue,
+                 COUNT(DISTINCT c.customer_id) AS customer_count
+             FROM orders AS o
+             JOIN customers AS c ON o.customer_id = c.customer_id
+             GROUP BY c.state
+             ORDER BY total_revenue DESC'
+    ),
+    february_revenue_drop AS (
+        QUESTION 'What was the revenue in February 2026 compared to January 2026?'
+        VERIFIED_AT 1772645863
+        ONBOARDING_QUESTION FALSE
+        VERIFIED_BY '(STEWARD = dash)'
+        SQL 'SELECT
+                 DATE_TRUNC(''month'', o.order_date) AS month,
+                 SUM(o.total_amount) AS total_revenue
+             FROM orders AS o
+             WHERE o.order_date >= ''2026-01-01''
+               AND o.order_date < ''2026-03-01''
+             GROUP BY DATE_TRUNC(''month'', o.order_date)
+             ORDER BY month'
+    )
+);
 
 -- Verify Semantic View creation
 SHOW SEMANTIC VIEWS IN SCHEMA dash_automated_intelligence_db.semantic;
@@ -1141,6 +1189,14 @@ ALTER DYNAMIC TABLE dash_automated_intelligence_db.dynamic_tables.enriched_order
 ALTER DYNAMIC TABLE dash_automated_intelligence_db.dynamic_tables.fact_orders REFRESH;
 ALTER DYNAMIC TABLE dash_automated_intelligence_db.dynamic_tables.daily_business_metrics REFRESH;
 ALTER DYNAMIC TABLE dash_automated_intelligence_db.dynamic_tables.product_performance_metrics REFRESH;
+
+-- ============================================================================
+-- Refresh Cortex Search Services (index the loaded data immediately)
+-- ============================================================================
+
+ALTER CORTEX SEARCH SERVICE dash_automated_intelligence_db.raw.product_search_service REFRESH;
+ALTER CORTEX SEARCH SERVICE dash_automated_intelligence_db.raw.product_reviews_search REFRESH;
+ALTER CORTEX SEARCH SERVICE dash_automated_intelligence_db.raw.support_tickets_search REFRESH;
 
 -- ============================================================================
 -- Verify Row Counts
