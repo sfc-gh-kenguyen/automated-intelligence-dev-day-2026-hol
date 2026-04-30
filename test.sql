@@ -27,7 +27,9 @@ FROM SPECIFICATION $$
       {"question": "Revenue dropped in February — what caused it and what do reviews say?"},
       {"question": "Find reviews mentioning wrong size with a rating below 3"},
       {"question": "Why are customers returning ski boots?"},
-      {"question": "What is our total revenue and customer count by state?"}
+      {"question": "What is our total revenue and customer count by state?"},
+      {"question": "What are the top complaint themes in support tickets from February 2026?"},
+      {"question": "How many reviews mention sizing issues, and which products are most affected?"}
     ]
   },
   "tools": [
@@ -130,3 +132,19 @@ SELECT TRY_PARSE_JSON(
     $${ "messages": [{"role": "user", "content": [{"type": "text", "text": "What is our total revenue and customer count by state?"}]}], "stream": false }$$
   )
 ) AS q5_full_response;
+
+-- Q6: Agentic Search — analytical aggregation over documents (theme extraction)
+SELECT TRY_PARSE_JSON(
+  SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+    'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT',
+    $${ "messages": [{"role": "user", "content": [{"type": "text", "text": "What are the top complaint themes in support tickets from February 2026?"}]}], "stream": false }$$
+  )
+) AS q6_full_response;
+
+-- Q7: Agentic Search — count + breakdown across documents
+SELECT TRY_PARSE_JSON(
+  SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+    'DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT',
+    $${ "messages": [{"role": "user", "content": [{"type": "text", "text": "How many reviews mention sizing issues, and which products are most affected?"}]}], "stream": false }$$
+  )
+) AS q7_full_response;

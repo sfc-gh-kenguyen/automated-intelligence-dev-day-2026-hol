@@ -355,6 +355,8 @@ Then test the agent with its sample questions — each demonstrates different to
 | 3 | "Find reviews mentioning wrong size with a rating below 3" | Agentic Search (filtered: source_type=review, rating<3) |
 | 4 | "Why are customers returning ski boots?" | Agentic Search (reviews + tickets, persist→analyze) |
 | 5 | "What is our total revenue and customer count by state?" | Cortex Analyst (text-to-SQL) |
+| 6 | "What are the top complaint themes in support tickets from February 2026?" | Agentic Search (filter→persist→AI_AGG theme extraction) |
+| 7 | "How many reviews mention sizing issues, and which products are most affected?" | Agentic Search (broad search→count→breakdown) |
 
 This is the **capstone moment** — the agent routes across structured data (text-to-SQL) and unstructured data (Cortex Search) to answer "what happened" and "why."
 

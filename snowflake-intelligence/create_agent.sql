@@ -33,7 +33,9 @@ FROM SPECIFICATION $$
       {"question": "Revenue dropped in February — what caused it and what do reviews say?"},
       {"question": "Find reviews mentioning wrong size with a rating below 3"},
       {"question": "Why are customers returning ski boots?"},
-      {"question": "What is our total revenue and customer count by state?"}
+      {"question": "What is our total revenue and customer count by state?"},
+      {"question": "What are the top complaint themes in support tickets from February 2026?"},
+      {"question": "How many reviews mention sizing issues, and which products are most affected?"}
     ]
   },
   "tools": [
