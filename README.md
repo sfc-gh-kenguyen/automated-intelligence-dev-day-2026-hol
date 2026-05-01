@@ -1,7 +1,25 @@
 # Building an End-to-End AI Application on Snowflake: From Data to Intelligence
 
-**Duration:** ~87 minutes  
-**Tools:** Cortex Code Desktop + Snowsight
+## Table of Contents
+
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Lab Sections](#lab-sections)
+  - [Section 0: CoCo Setup](#section-0-coco-setup-5-min--manual)
+  - [Section 1: Infrastructure Setup](#section-1-infrastructure-setup-10-min--manual)
+  - [Section 2: Streaming Ingestion](#section-2-streaming-ingestion-10-min--manual)
+  - [Section 3: Gen2 Warehouse & MERGE](#section-3-gen2-warehouse--merge-5-min--coco)
+  - [Section 4: Dynamic Tables Pipeline](#section-4-dynamic-tables-pipeline-5-min--coco)
+  - [Section 5: Iceberg Tables & V3 Features](#section-5-iceberg-tables--v3-features-7-min--coco)
+  - [Section 6: Interactive Tables](#section-6-interactive-tables-5-min--manual)
+  - [Section 7: Data Quality](#section-7-data-quality-5-min--coco)
+  - [Section 8: dbt Analytics](#section-8-dbt-analytics-10-min--coco)
+  - [Section 9: Cortex AI Functions](#section-9-cortex-ai-functions-5-min--coco)
+  - [Section 10: Snowflake Intelligence](#section-10-snowflake-intelligence-10-min--coco)
+  - [Section 11: Security & Governance](#section-11-security--governance-5-min--coco)
+  - [Section 12: Streamlit Dashboard](#section-12-streamlit-dashboard-5-min--coco)
+- [Summary](#summary)
+- [Resources](#resources)
 
 ---
 
@@ -153,7 +171,7 @@ The following are already enabled on your lab account:
 
 > **Legend:**  
 > MANUAL = Run in terminal or Snowsight (no CoCo)  
-> COCO = Run via Cortex Code prompts
+> CoCo = Run via Cortex Code prompts
 
 ---
 
@@ -217,7 +235,7 @@ SELECT COUNT(*) FROM dash_automated_intelligence_db.staging.order_items_staging;
 
 ---
 
-### Section 3: Gen2 Warehouse & MERGE (5 min) — COCO
+### Section 3: Gen2 Warehouse & MERGE (5 min) — CoCo
 
 > **Prompt CoCo:**  
 > *"Merge the staging data into RAW using the Gen2 warehouse and show me the timing results"*
@@ -236,7 +254,7 @@ Also explore: `demos/gen2-warehouse.sql`
 
 ---
 
-### Section 4: Dynamic Tables Pipeline (5 min) — COCO
+### Section 4: Dynamic Tables Pipeline (5 min) — CoCo
 
 > **Prompt CoCo:**  
 > *"Show me the Dynamic Tables pipeline status — names, target lag, last refresh time, and row counts for each tier"*
@@ -251,7 +269,7 @@ Follow up:
 
 ---
 
-### Section 5: Iceberg Tables & V3 Features (7 min) — COCO
+### Section 5: Iceberg Tables & V3 Features (7 min) — CoCo
 
 > **Prompt CoCo:**  
 > *"Create a managed Iceberg table from RAW.ORDERS with clustering by year and month, then query it to show partition pruning"*
@@ -298,7 +316,7 @@ Check the query profile for fast execution time.
 
 ---
 
-### Section 7: Data Quality (5 min) — COCO
+### Section 7: Data Quality (5 min) — CoCo
 
 > **Prompt CoCo:**  
 > *"Check the data quality monitoring results — are there any NULL violations in the orders or order_items tables?"*
@@ -312,7 +330,7 @@ Also explore: `demos/data-quality.sql`
 
 ---
 
-### Section 8: dbt Analytics (10 min) — COCO
+### Section 8: dbt Analytics (10 min) — CoCo
 
 > **Prompt CoCo:**  
 > *"Install dbt dependencies and build all models in the dbt-analytics project"*
@@ -327,7 +345,7 @@ Follow up:
 
 ---
 
-### Section 9: Cortex AI Functions (5 min) — COCO
+### Section 9: Cortex AI Functions (5 min) — CoCo
 
 > **Prompt CoCo:**  
 > *"Run sentiment analysis on the product reviews using AI_CLASSIFY — show me 5 reviews with their predicted sentiment"*
@@ -341,7 +359,7 @@ See: `demos/cortex-ai-functions.sql`
 
 ---
 
-### Section 10: Snowflake Intelligence (10 min) — COCO
+### Section 10: Snowflake Intelligence (10 min) — CoCo
 
 > **Prompt CoCo:**  
 > *"Run snowflake-intelligence/create_agent.sql to create the Business Insights Agent"*
@@ -364,7 +382,7 @@ Also explore: `snowflake-intelligence/semantic_view_sql_demo.sql`
 
 ---
 
-### Section 11: Security & Governance (5 min) — COCO
+### Section 11: Security & Governance (5 min) — CoCo
 
 The Row Access Policy and WEST_COAST_MANAGER role were already created by `setup.sql`. Now demonstrate the contrast:
 
@@ -382,7 +400,7 @@ Also explore: `demos/security-rbac.sql` (reference queries)
 
 ---
 
-### Section 12: Streamlit Dashboard (5 min) — COCO
+### Section 12: Streamlit Dashboard (5 min) — CoCo
 
 > **Prompt CoCo:**  
 > *"Deploy the Streamlit dashboard to Snowflake"*
@@ -400,49 +418,20 @@ Open in Snowsight to see all the data flowing through the system — live ingest
 | 0. CoCo Setup | MANUAL | 5 min | Install + connect |
 | 1. Infrastructure | MANUAL | 10 min | Run setup.sql |
 | 2. Streaming | MANUAL | 10 min | Python SDK → STAGING |
-| 3. Gen2 MERGE | COCO | 5 min | Staging → RAW + Optima |
-| 4. Dynamic Tables | COCO | 5 min | Pipeline status + data |
-| 5. Iceberg & V3 | COCO | 7 min | Managed Iceberg + V3 features |
+| 3. Gen2 MERGE | CoCo | 5 min | Staging → RAW + Optima |
+| 4. Dynamic Tables | CoCo | 5 min | Pipeline status + data |
+| 5. Iceberg & V3 | CoCo | 7 min | Managed Iceberg + V3 features |
 | 6. Interactive Tables | MANUAL | 5 min | Point lookups in Snowsight |
-| 7. Data Quality | COCO | 5 min | DMF monitoring results |
-| 8. dbt Analytics | COCO | 10 min | Build models |
-| 9. Cortex AI | COCO | 5 min | AI_CLASSIFY, AI_FILTER |
-| 10. Intelligence | COCO | 10 min | Agent creation + NL queries |
-| 11. Security | COCO | 5 min | RBAC role contrast |
-| 12. Streamlit | COCO | 5 min | Deploy dashboard |
+| 7. Data Quality | CoCo | 5 min | DMF monitoring results |
+| 8. dbt Analytics | CoCo | 10 min | Build models |
+| 9. Cortex AI | CoCo | 5 min | AI_CLASSIFY, AI_FILTER |
+| 10. Intelligence | CoCo | 10 min | Agent creation + NL queries |
+| 11. Security | CoCo | 5 min | RBAC role contrast |
+| 12. Streamlit | CoCo | 5 min | Deploy dashboard |
 | | | **~87 min** | |
 
 **Manual: 4 sections** (setup, streaming, interactive, CoCo install)  
 **CoCo: 9 sections** (Gen2, DTs, Iceberg, DQ, dbt, Cortex AI, Intelligence, Security, Streamlit)
-
----
-
-## Cleanup
-
-```sql
-USE ROLE ACCOUNTADMIN;
-DROP DATABASE IF EXISTS dash_automated_intelligence_db CASCADE;
-DROP WAREHOUSE IF EXISTS hol_wh;
-DROP WAREHOUSE IF EXISTS hol_gen2_wh;
-DROP WAREHOUSE IF EXISTS hol_interactive_wh;
-DROP ROLE IF EXISTS automated_intelligence_admin;
-DROP ROLE IF EXISTS west_coast_manager;
-```
-
----
-
-## Directory Structure
-
-```
-setup.sql                      <- Run first (creates all shared infrastructure)
-cleanup.sql                    <- Run after lab to remove all objects
-test.sql                       <- Validates agent creation + 7 sample questions
-demos/                         <- Section demos (Cortex AI, data quality, Gen2, Iceberg, interactive, security, SQL features)
-dbt-analytics/                 <- dbt project (staging + mart models)
-snowflake-intelligence/        <- Cortex Agent + Semantic View
-snowpipe-streaming-python/     <- Python Snowpipe Streaming SDK
-streamlit-dashboard/           <- 7-page Streamlit in Snowflake app
-```
 
 ---
 
@@ -452,8 +441,8 @@ streamlit-dashboard/           <- 7-page Streamlit in Snowflake app
 - [Dynamic Tables](https://docs.snowflake.com/en/user-guide/dynamic-tables-about)
 - [Interactive Tables](https://docs.snowflake.com/en/user-guide/interactive)
 - [Gen2 Warehouses](https://docs.snowflake.com/en/user-guide/warehouses-gen2)
-- [Cortex Agent](https://docs.snowflake.com/en/user-guide/snowflake-intelligence/cortex-agent)
+- [Cortex Agents](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents)
 - [Semantic Views](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view)
 - [Data Metric Functions](https://docs.snowflake.com/en/user-guide/data-quality-intro)
 - [Row Access Policies](https://docs.snowflake.com/en/user-guide/security-row-intro)
-- [Cortex Code](https://docs.snowflake.com/en/user-guide/cortex-code)
+- [Cortex Code](https://docs.snowflake.com/en/user-guide/cortex-code/cortex-code)
