@@ -456,4 +456,4 @@ talk/slides-outline.md
 talk/codebase-summary.md
 
 # dbt local user config
-dbt-analytics/.user.yml
+dbt-analytics/.user.ymlstreamlit-dashboard/output/
