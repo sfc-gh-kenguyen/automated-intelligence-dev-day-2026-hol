@@ -456,4 +456,7 @@ talk/slides-outline.md
 talk/codebase-summary.md
 
 # dbt local user config
-dbt-analytics/.user.ymlstreamlit-dashboard/output/
+dbt-analytics/.user.yml
+
+# Streamlit deploy output (symlinks)
+**/output/bundle/streamlit-dashboard/output/
