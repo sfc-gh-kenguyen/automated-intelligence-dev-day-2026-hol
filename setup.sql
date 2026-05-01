@@ -1165,8 +1165,11 @@ CREATE STAGE IF NOT EXISTS dash_automated_intelligence_db.raw.the_dashboard_stag
     COMMENT = 'Stage for Streamlit dashboard application files';
 
 -- ============================================================================
--- Load Seed Data from S3 (Parquet for large tables, CSV for small tables)
+-- Load Seed Data from S3 (Parquet)
 -- ============================================================================
+
+CREATE OR REPLACE FILE FORMAT dash_automated_intelligence_db.raw.parquet_format
+    TYPE = 'PARQUET';
 
 CREATE OR REPLACE FILE FORMAT dash_automated_intelligence_db.raw.csv_format
     TYPE = 'CSV'
@@ -1174,36 +1177,36 @@ CREATE OR REPLACE FILE FORMAT dash_automated_intelligence_db.raw.csv_format
     FIELD_OPTIONALLY_ENCLOSED_BY = '"'
     NULL_IF = ('');
 
-CREATE OR REPLACE FILE FORMAT dash_automated_intelligence_db.raw.parquet_format
-    TYPE = 'PARQUET';
-
 COPY INTO dash_automated_intelligence_db.raw.customers
 FROM 's3://sfquickstarts/summit_dev_day_2026_automated_intelligence_hol/parquet/'
 FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
 PATTERN = 'customers.*\.parquet'
-MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE;
+MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+FORCE = TRUE;
 
 COPY INTO dash_automated_intelligence_db.raw.orders
 FROM 's3://sfquickstarts/summit_dev_day_2026_automated_intelligence_hol/parquet/'
 FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
 PATTERN = 'orders_.*\.parquet'
-MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE;
+MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+FORCE = TRUE;
 
 COPY INTO dash_automated_intelligence_db.raw.order_items
 FROM 's3://sfquickstarts/summit_dev_day_2026_automated_intelligence_hol/parquet/'
 FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
 PATTERN = 'order_items_.*\.parquet'
-MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE;
+MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+FORCE = TRUE;
 
 COPY INTO dash_automated_intelligence_db.raw.product_reviews
 FROM 's3://sfquickstarts/summit_dev_day_2026_automated_intelligence_hol/product_reviews.csv'
 FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.csv_format')
-ON_ERROR = 'CONTINUE';
+FORCE = TRUE;
 
 COPY INTO dash_automated_intelligence_db.raw.support_tickets
 FROM 's3://sfquickstarts/summit_dev_day_2026_automated_intelligence_hol/support_tickets.csv'
 FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.csv_format')
-ON_ERROR = 'CONTINUE';
+FORCE = TRUE;
 
 -- ============================================================================
 -- Refresh Dynamic Tables (now that seed data is loaded)
