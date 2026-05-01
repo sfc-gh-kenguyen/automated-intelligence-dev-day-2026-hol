@@ -1306,3 +1306,12 @@ UNION ALL SELECT 'What are the top complaint themes in support tickets from Febr
        PARSE_JSON('{"ground_truth_output": "The agent should use search_customer_feedback to find and analyze support tickets from February 2026. The response should identify main complaint themes with examples from actual tickets."}')
 UNION ALL SELECT 'How many reviews mention sizing issues, and which products are most affected?',
        PARSE_JSON('{"ground_truth_output": "The agent should use search_customer_feedback to find reviews mentioning sizing issues. The response should provide a count and identify which products are most frequently mentioned in sizing complaints."}');
+
+-- ============================================================================
+-- FINAL STEP: Deploy Streamlit Dashboard (run from CLI)
+-- ============================================================================
+-- Run the following from the repo root after this SQL completes:
+--
+--   cd streamlit-dashboard && snow streamlit deploy --replace -c <your-connection>
+--
+-- ============================================================================
