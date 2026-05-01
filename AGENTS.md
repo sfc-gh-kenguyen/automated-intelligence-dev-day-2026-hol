@@ -8,17 +8,12 @@
 
 ```
 setup.sql                      ← Root DDL: creates all shared infrastructure
-cortex-ai-functions-demo/                   ← Cortex AI functions (AI_FILTER, AI_CLASSIFY)
-data-quality/                  ← Data Metric Functions (DMF) demo
+demos/                         ← Section demos (Cortex AI, data quality, Gen2, Iceberg, interactive, security, SQL features)
 dbt-analytics/                 ← dbt project (staging + mart models)
-gen2-warehouse/                ← Gen2 warehouse + Optima Indexing
-iceberg/                       ← Iceberg partitioned writes
-interactive/                   ← Interactive Tables + warehouse
-security-and-governance/       ← Row Access Policies (RBAC)
 snowflake-intelligence/        ← Cortex Agent + Semantic View
 snowpipe-streaming-python/     ← Python Snowpipe Streaming SDK
-sql-features/                  ← SQL feature demos (pipe operator, UNION BY NAME, etc.)
 streamlit-dashboard/           ← 7-page Streamlit in Snowflake app
+seed_data_generator/           ← Data generation scripts (output on S3)
 tests/                         ← Validation notebooks
 ```
 

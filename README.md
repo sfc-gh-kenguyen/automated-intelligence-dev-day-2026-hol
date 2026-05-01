@@ -232,7 +232,7 @@ Then ask:
 
 This demonstrates Optima Indexing — automatic partition pruning with zero configuration.
 
-Also explore: `gen2-warehouse/optima_indexing_demo.sql`
+Also explore: `demos/gen2-warehouse.sql`
 
 ---
 
@@ -274,7 +274,7 @@ Finally:
 
 This demonstrates V3 default values — schema evolution without rewriting data.
 
-Also explore: `iceberg/partitioned_writes_demo.sql`
+Also explore: `demos/iceberg.sql`
 
 ---
 
@@ -308,7 +308,7 @@ CoCo will query `vw_dq_monitoring_results` and summarize findings.
 Follow up:
 > *"Show me the alert history for data quality issues"*
 
-Also explore: `data-quality/data_quality_expectations_demo.sql`
+Also explore: `demos/data-quality.sql`
 
 ---
 
@@ -337,7 +337,7 @@ CoCo will write and execute AI function SQL against `product_reviews`.
 Also try:
 > *"Use AI_FILTER to find product catalog items suitable for beginners"*
 
-See: `cortex-ai-functions-demo/ai_filter_demo.sql`
+See: `demos/cortex-ai-functions.sql`
 
 ---
 
@@ -378,7 +378,7 @@ CoCo will:
 
 Key insight: The West Coast Manager doesn't even know other states exist — filtered at the database level.
 
-Also explore: `security-and-governance/setup_west_coast_manager.sql` (reference queries)
+Also explore: `demos/security-rbac.sql` (reference queries)
 
 ---
 
@@ -435,17 +435,14 @@ DROP ROLE IF EXISTS west_coast_manager;
 
 ```
 setup.sql                      <- Run first (creates all shared infrastructure)
-cortex-ai-functions-demo/                   <- AI_FILTER, AI_CLASSIFY demos
-data-quality/                  <- Data Metric Functions demo
+cleanup.sql                    <- Run after lab to remove all objects
+test.sql                       <- Validates agent creation + 7 sample questions
+demos/                         <- Section demos (Cortex AI, data quality, Gen2, Iceberg, interactive, security, SQL features)
 dbt-analytics/                 <- dbt project (staging + mart models)
-gen2-warehouse/                <- Gen2 + Optima Indexing demo
-iceberg/                       <- Iceberg partitioned writes demo
-interactive/                   <- Interactive Tables validation + load testing
-security-and-governance/       <- Row Access Policy (RBAC) demo queries
 snowflake-intelligence/        <- Cortex Agent + Semantic View
 snowpipe-streaming-python/     <- Python Snowpipe Streaming SDK
-sql-features/                  <- SQL feature demos (pipe operator, UNION BY NAME, etc.)
 streamlit-dashboard/           <- 7-page Streamlit in Snowflake app
+seed_data_generator/           <- Data generation scripts (output on S3)
 tests/                         <- Validation notebooks
 ```
 
