@@ -17,7 +17,6 @@
   - [Section 10: Snowflake Intelligence](#section-10-snowflake-intelligence-10-min--coco)
   - [Section 11: Security & Governance](#section-11-security--governance-5-min--snowflake-intelligence)
   - [Section 12: Streamlit Dashboard](#section-12-streamlit-dashboard-5-min--coco)
-- [Summary](#summary)
 - [Cleanup](#cleanup)
 - [Resources](#resources)
 
@@ -143,28 +142,6 @@ git clone https://github.com/iamontheinet/automated-intelligence-hol.git
 cd automated-intelligence-hol
 ```
 
-### 7. Choose Your Environment
-
-| Option | What It Handles | Setup |
-|--------|----------------|-------|
-| **Cortex Code Desktop** (recommended) | SQL, terminal, AI prompts — everything in one place | Launch `cortex`, open the cloned repo folder |
-| **Snowsight Workspaces** (alternative) | SQL files only — open and run directly | Projects → Workspaces → "From Git repository" → paste repo URL → "Public repository" auth → Create |
-
-**Recommended: Cortex Code Desktop.** All lab sections (SQL execution, terminal commands, CoCo prompts) work without switching tools.
-
-**If using Workspaces:** SQL-heavy sections work natively (open file → Run). For Sections 2 (streaming) and 8 (dbt), you'll need a local terminal since those require Python/dbt CLI.
-
-> **Docs:** [Integrate Workspaces with Git](https://docs.snowflake.com/en/user-guide/ui-snowsight/workspaces-git)
-
-### Account Features (pre-enabled)
-
-The following are already enabled on your lab account:
-- Gen2 Warehouses
-- Interactive Warehouses
-- Cortex AI (Agent, Search, Analyst)
-- Dynamic Tables
-- Snowpipe Streaming
-
 ---
 
 ## Lab Sections
@@ -217,8 +194,11 @@ pip install -r requirements.txt
 
 # Copy and configure profile
 cp profile.json.template profile.json
-# Edit profile.json: set account, user, private_key, role
+```
 
+> **⚠️ IMPORTANT:** Edit `profile.json` and set your `account`, `user`, `private_key` (contents of rsa_key.p8), and `role` before proceeding.
+
+```bash
 # Stream 10,000 orders (lands in STAGING.ORDERS_STAGING and STAGING.ORDER_ITEMS_STAGING)
 python src/automated_intelligence_streaming.py 10000
 ```
@@ -402,29 +382,6 @@ Also explore: `demos/security-rbac.sql` (reference queries)
 CoCo will run `snow streamlit deploy` from the `streamlit-dashboard/` directory.
 
 Open in Snowsight to see all the data flowing through the system — live ingestion metrics, pipeline health, query performance comparisons.
-
----
-
-## Summary
-
-| Section | Method | Duration | Focus |
-|---------|--------|----------|-------|
-| 1. Setup | MANUAL | 10 min | CoCo install + setup.sql |
-| 2. Streaming | MANUAL | 10 min | Python SDK → STAGING |
-| 3. Gen2 MERGE | CoCo | 5 min | Staging → RAW + Optima |
-| 4. Dynamic Tables | CoCo | 5 min | Pipeline status + data |
-| 5. Iceberg & V3 | CoCo | 7 min | Managed Iceberg + V3 features |
-| 6. Interactive Tables | MANUAL | 5 min | Point lookups in Snowsight |
-| 7. Data Quality | CoCo | 5 min | DMF monitoring results |
-| 8. dbt Analytics | CoCo | 10 min | Build models |
-| 9. Cortex AI | CoCo | 5 min | AI_CLASSIFY, AI_FILTER |
-| 10. Intelligence | CoCo | 10 min | Agent creation + NL queries |
-| 11. Security | SI | 5 min | RBAC via Snowflake Intelligence |
-| 12. Streamlit | CoCo | 5 min | Deploy dashboard |
-
-**Manual: 3 sections** (setup, streaming, interactive)  
-**CoCo: 8 sections** (Gen2, DTs, Iceberg, DQ, dbt, Cortex AI, Intelligence, Streamlit)  
-**Snowflake Intelligence: 1 section** (Security & Governance)
 
 ---
 
