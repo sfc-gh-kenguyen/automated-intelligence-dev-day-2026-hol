@@ -179,7 +179,7 @@ This creates:
 - Data quality monitoring (DMFs + alert)
 - Product catalog + 2 Cortex Search Services (product catalog + customer feedback via Agentic Search)
 - Semantic View with verified queries for natural language queries
-- Seed data loaded from S3 (500K customers, 1M orders, 3.2M order items, 1200 reviews, 1200 tickets)
+- Seed data loaded from S3 (2M customers, 50M orders, 161M order items, 1200 reviews, 1200 tickets)
 - Row Access Policy + WEST_COAST_MANAGER role (RBAC demo)
 
 ---
