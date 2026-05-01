@@ -20,15 +20,14 @@ with tab1:
     st.subheader("Customer Lifetime Value & Segmentation")
     
     try:
-        # Check if DBT_ANALYTICS schema exists
-        schema_check = session.sql("""
-            SELECT COUNT(*) as schema_exists 
-            FROM DASH_AUTOMATED_INTELLIGENCE_DB.INFORMATION_SCHEMA.SCHEMATA 
-            WHERE SCHEMA_NAME = 'DBT_ANALYTICS'
+        table_check = session.sql("""
+            SELECT COUNT(*) as cnt 
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_SCHEMA = 'DBT_ANALYTICS' AND TABLE_NAME = 'CUSTOMER_LIFETIME_VALUE'
         """).to_pandas()
         
-        if schema_check.iloc[0]['SCHEMA_EXISTS'] == 0:
-            st.info("📋 **dbt models not yet deployed**\n\nRun the following command to deploy dbt models:\n```\ndbt run --target dev\n```")
+        if table_check.iloc[0]['CNT'] == 0:
+            st.info("📋 **dbt models not yet deployed**\n\nRun Section 8 (dbt Analytics) first to create the analytics tables:\n```\ndbt build\n```")
         else:
             # Query customer analytics from dbt marts
             clv_query = """
@@ -187,15 +186,14 @@ with tab2:
     st.subheader("Product Affinity & Recommendations")
     
     try:
-        # Check if DBT_ANALYTICS schema exists
-        schema_check = session.sql("""
-            SELECT COUNT(*) as schema_exists 
-            FROM DASH_AUTOMATED_INTELLIGENCE_DB.INFORMATION_SCHEMA.SCHEMATA 
-            WHERE SCHEMA_NAME = 'DBT_ANALYTICS'
+        table_check = session.sql("""
+            SELECT COUNT(*) as cnt 
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_SCHEMA = 'DBT_ANALYTICS' AND TABLE_NAME = 'PRODUCT_PERFORMANCE'
         """).to_pandas()
         
-        if schema_check.iloc[0]['SCHEMA_EXISTS'] == 0:
-            st.info("📋 **dbt models not yet deployed**\n\nRun the following command to deploy dbt models:\n```\ndbt run --target dev\n```")
+        if table_check.iloc[0]['CNT'] == 0:
+            st.info("📋 **dbt models not yet deployed**\n\nRun Section 8 (dbt Analytics) first to create the analytics tables:\n```\ndbt build\n```")
         else:
             # Query product affinity data
             affinity_query = """
