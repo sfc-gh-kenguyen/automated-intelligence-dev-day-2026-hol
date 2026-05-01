@@ -381,7 +381,7 @@ Also explore: `demos/security-rbac.sql` (reference queries)
 
 CoCo will run `snow streamlit deploy` from the `streamlit-dashboard/` directory.
 
-Open in Snowsight to see all the data flowing through the system — live ingestion metrics, pipeline health, query performance comparisons.
+Open in Snowsight to see the data pipeline in action — staging ingestion, Gen2 MERGE to production, pipeline health, and product analytics.
 
 ---
 
