@@ -735,55 +735,6 @@ GROUP BY product_category;
 
 
 -- ============================================================================
--- STEP 4.5: Interactive Tables (Act 2 - Serve & Analyze)
--- Purpose: Sub-100ms queries for high-concurrency serving (GA Dec 2025)
--- ============================================================================
-
-USE SCHEMA dash_automated_intelligence_db.interactive;
-
--- Create interactive tables (aggregated customer analytics)
-CREATE OR REPLACE INTERACTIVE TABLE customer_order_analytics
-  CLUSTER BY (customer_id)
-AS
-SELECT 
-  c.customer_id,
-  c.first_name,
-  c.last_name,
-  c.email,
-  c.customer_segment,
-  COUNT(DISTINCT o.order_id) as total_orders,
-  SUM(o.total_amount) as total_spent,
-  AVG(o.total_amount) as avg_order_value,
-  MIN(o.order_date) as first_order_date,
-  MAX(o.order_date) as last_order_date
-FROM dash_automated_intelligence_db.raw.customers c
-INNER JOIN dash_automated_intelligence_db.raw.orders o ON c.customer_id = o.customer_id
-GROUP BY c.customer_id, c.first_name, c.last_name, c.email, c.customer_segment;
-
-CREATE OR REPLACE INTERACTIVE TABLE order_lookup
-  CLUSTER BY (order_id)
-AS
-SELECT 
-  o.order_id,
-  o.customer_id,
-  o.order_date,
-  o.order_status,
-  o.total_amount,
-  c.first_name,
-  c.last_name,
-  c.email
-FROM dash_automated_intelligence_db.raw.orders o
-INNER JOIN dash_automated_intelligence_db.raw.customers c ON o.customer_id = c.customer_id;
-
--- Create interactive warehouse
-CREATE OR REPLACE INTERACTIVE WAREHOUSE hol_interactive_wh
-  TABLES (customer_order_analytics, order_lookup)
-  WAREHOUSE_SIZE = 'XSMALL';
-
-ALTER WAREHOUSE IF EXISTS hol_interactive_wh RESUME IF SUSPENDED;
-
-
--- ============================================================================
 -- STEP 5: Data Quality Monitoring (Act 3 - Intelligence & Governance)
 -- Purpose: DMFs for automated data quality checks and alerting
 -- ============================================================================
@@ -1224,6 +1175,52 @@ ALTER DYNAMIC TABLE dash_automated_intelligence_db.dynamic_tables.product_perfor
 
 ALTER CORTEX SEARCH SERVICE dash_automated_intelligence_db.raw.product_search_service REFRESH;
 ALTER CORTEX SEARCH SERVICE dash_automated_intelligence_db.raw.customer_feedback_search REFRESH;
+
+-- ============================================================================
+-- Create Interactive Tables (after data load so they capture all 50M rows)
+-- Purpose: Sub-100ms queries for high-concurrency serving (GA Dec 2025)
+-- ============================================================================
+
+USE SCHEMA dash_automated_intelligence_db.interactive;
+
+CREATE OR REPLACE INTERACTIVE TABLE customer_order_analytics
+  CLUSTER BY (customer_id)
+AS
+SELECT 
+  c.customer_id,
+  c.first_name,
+  c.last_name,
+  c.email,
+  c.customer_segment,
+  COUNT(DISTINCT o.order_id) as total_orders,
+  SUM(o.total_amount) as total_spent,
+  AVG(o.total_amount) as avg_order_value,
+  MIN(o.order_date) as first_order_date,
+  MAX(o.order_date) as last_order_date
+FROM dash_automated_intelligence_db.raw.customers c
+INNER JOIN dash_automated_intelligence_db.raw.orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name, c.email, c.customer_segment;
+
+CREATE OR REPLACE INTERACTIVE TABLE order_lookup
+  CLUSTER BY (order_id)
+AS
+SELECT 
+  o.order_id,
+  o.customer_id,
+  o.order_date,
+  o.order_status,
+  o.total_amount,
+  c.first_name,
+  c.last_name,
+  c.email
+FROM dash_automated_intelligence_db.raw.orders o
+INNER JOIN dash_automated_intelligence_db.raw.customers c ON o.customer_id = c.customer_id;
+
+CREATE OR REPLACE INTERACTIVE WAREHOUSE hol_interactive_wh
+  TABLES (customer_order_analytics, order_lookup)
+  WAREHOUSE_SIZE = 'XSMALL';
+
+ALTER WAREHOUSE IF EXISTS hol_interactive_wh RESUME IF SUSPENDED;
 
 -- ============================================================================
 -- Verify Row Counts
