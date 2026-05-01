@@ -59,9 +59,9 @@ def show_header():
         with col2:
             st.markdown("<div class='title-spacing'></div>", unsafe_allow_html=True)
             st.title("The Dash Board")
-        st.caption("Monitor data ingestion, pipeline health, and compare Interactive vs Standard table performance")
+        st.caption("Monitor live data ingestion, pipeline health, and product analytics")
     else:
         st.title("🏂 The Dash Board")
-        st.caption("Monitor data ingestion, pipeline health, and compare Interactive vs Standard table performance")
+        st.caption("Monitor live data ingestion, pipeline health, and product analytics")
 
 IS_SIS = is_streamlit_in_snowflake()

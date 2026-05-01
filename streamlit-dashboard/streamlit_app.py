@@ -1,11 +1,13 @@
 import streamlit as st
 import time
+from pathlib import Path
 from shared import IS_SIS, load_custom_css
 
-# Page configuration
+APP_DIR = Path(__file__).parent
+
 st.set_page_config(
     page_title="The Dash Board",
-    page_icon="assets/dash_snowboard_512.png",
+    page_icon=str(APP_DIR / "assets" / "dash_snowboard_512.png"),
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -13,17 +15,11 @@ st.set_page_config(
 # Load custom CSS
 load_custom_css()
 
-# Define pages with explicit URL paths to avoid conflicts
-live_ingestion_page = st.Page("pages/live_ingestion.py", title="Live Ingestion", icon="📊", url_path="live_ingestion")
+data_pipeline_page = st.Page("pages/summary.py", title="Data Pipeline", icon="🔄", url_path="data_pipeline")
 pipeline_health_page = st.Page("pages/pipeline_health.py", title="Pipeline Health", icon="🏥", url_path="pipeline_health")
-query_performance_page = st.Page("pages/query_performance.py", title="Interactive vs Standard", icon="⚡", url_path="query_performance")
-warehouse_performance_page = st.Page("pages/data_pipeline.py", title="Gen 1 vs Gen 2", icon="🚀", url_path="warehouse_performance")
-ml_insights_page = st.Page("pages/ml_insights.py", title="GPU-Accelerated ML", icon="🔮", url_path="ml_insights")
 customer_product_analytics_page = st.Page("pages/customer_product_analytics.py", title="Product Analytics", icon="📈", url_path="customer_product_analytics")
-summary_page = st.Page("pages/summary.py", title="Summary", icon="📋", url_path="summary")
 
-# Create navigation with default page
-pg = st.navigation([summary_page, live_ingestion_page, pipeline_health_page, query_performance_page, warehouse_performance_page, ml_insights_page, customer_product_analytics_page])
+pg = st.navigation([data_pipeline_page, pipeline_health_page, customer_product_analytics_page])
 
 # Auto-refresh controls in sidebar
 with st.sidebar:
@@ -36,6 +32,6 @@ with st.sidebar:
 pg.run()
 
 # Auto-refresh 
-if auto_refresh_enabled:
+if auto_refresh_enabled and not st.session_state.get("merge_done", False):
     time.sleep(refresh_interval)
     st.rerun()

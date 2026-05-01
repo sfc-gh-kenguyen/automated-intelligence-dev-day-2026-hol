@@ -3,135 +3,102 @@ import plotly.express as px
 from shared import get_session, show_header, format_number
 
 show_header()
-st.subheader("📈 Summary")
+st.subheader("🔄 Data Pipeline")
 st.divider()
-st.info("📅 Showing **all-time** historical data")
 
 session = get_session()
 
-def render_summary_dashboard(schema: str, orders_table: str, order_items_table: str):
+def render_dashboard(schema: str, orders_table: str, order_items_table: str, show_customers: bool = True):
+    staging_count = 0
     try:
-        col1, col2, col3, col4, col5 = st.columns(5)
+        if show_customers:
+            col1, col2, col3, col4, col5 = st.columns(5)
+        else:
+            col1, col2, col3, col4 = st.columns(4)
 
-        alltime_orders_query = f"""
-        SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
-        """
-        alltime_orders_result = session.sql(alltime_orders_query).collect()
-        alltime_orders = alltime_orders_result[0]['CNT'] if alltime_orders_result else 0
+        orders_cnt = session.sql(f"SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}").collect()[0]['CNT']
+        staging_count = orders_cnt
+        items_cnt = session.sql(f"SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table}").collect()[0]['CNT']
+        revenue = session.sql(f"SELECT COALESCE(ROUND(SUM(total_amount), 2), 0) as val FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}").collect()[0]['VAL']
+        products_cnt = session.sql(f"SELECT COUNT(DISTINCT product_id) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table}").collect()[0]['CNT']
 
-        alltime_items_query = f"""
-        SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table}
-        """
-        alltime_items_result = session.sql(alltime_items_query).collect()
-        alltime_items = alltime_items_result[0]['CNT'] if alltime_items_result else 0
-
-        alltime_customers_query = """
-        SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS
-        """
-        alltime_customers_result = session.sql(alltime_customers_query).collect()
-        alltime_customers = alltime_customers_result[0]['CNT'] if alltime_customers_result else 0
-
-        alltime_revenue_query = f"""
-        SELECT ROUND(SUM(total_amount), 2) as total_revenue
-        FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
-        """
-        alltime_revenue_result = session.sql(alltime_revenue_query).collect()
-        alltime_revenue = alltime_revenue_result[0]['TOTAL_REVENUE'] if alltime_revenue_result and alltime_revenue_result[0]['TOTAL_REVENUE'] is not None else 0
-
-        alltime_products_query = f"""
-        SELECT COUNT(DISTINCT product_id) as cnt 
-        FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table}
-        """
-        alltime_products_result = session.sql(alltime_products_query).collect()
-        alltime_products = alltime_products_result[0]['CNT'] if alltime_products_result else 0
-
-        col1.metric("Total Customers", format_number(alltime_customers, include_decimals=False))
-        col2.metric("Total Orders", format_number(alltime_orders, include_decimals=False))
-        col3.metric("Total Order Items", format_number(alltime_items, include_decimals=False))
-        col4.metric("Total Products", format_number(alltime_products, include_decimals=False))
-        col5.metric("Total Revenue", f"${format_number(alltime_revenue)}")
+        if show_customers:
+            customers_cnt = session.sql("SELECT COUNT(*) as cnt FROM DASH_AUTOMATED_INTELLIGENCE_DB.RAW.CUSTOMERS").collect()[0]['CNT']
+            col1.metric("Customers", format_number(customers_cnt, include_decimals=False))
+            col2.metric("Orders", format_number(orders_cnt, include_decimals=False))
+            col3.metric("Order Items", format_number(items_cnt, include_decimals=False))
+            col4.metric("Products", format_number(products_cnt, include_decimals=False))
+            col5.metric("Revenue", f"${format_number(revenue)}")
+        else:
+            col1.metric("Orders", format_number(orders_cnt, include_decimals=False))
+            col2.metric("Order Items", format_number(items_cnt, include_decimals=False))
+            col3.metric("Products", format_number(products_cnt, include_decimals=False))
+            col4.metric("Revenue", f"${format_number(revenue)}")
 
         st.divider()
 
         col_left, col_right = st.columns(2)
 
         with col_left:
-            st.subheader("📊 Order Status Distribution")
-            
-            alltime_status_query = f"""
-            SELECT 
-                ORDER_STATUS,
-                COUNT(*) as order_count
-            FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
-            GROUP BY ORDER_STATUS
-            ORDER BY order_count DESC
-            """
-            
-            alltime_status_df = session.sql(alltime_status_query).to_pandas()
-            
-            if not alltime_status_df.empty:
-                fig = px.pie(alltime_status_df, values='ORDER_COUNT', names='ORDER_STATUS', height=400)
+            st.markdown("#### 📊 Order Status Distribution")
+            status_df = session.sql(f"""
+                SELECT ORDER_STATUS, COUNT(*) as order_count
+                FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table}
+                GROUP BY ORDER_STATUS ORDER BY order_count DESC
+            """).to_pandas()
+
+            if not status_df.empty:
+                fig = px.pie(status_df, values='ORDER_COUNT', names='ORDER_STATUS', height=400)
                 fig.update_traces(textposition='inside', textinfo='percent+label')
                 st.plotly_chart(fig, width='stretch')
             else:
-                st.info("⚠️ No data available. Stream data first using Snowpipe Streaming.")
+                st.info("⚠️ No data available.")
 
         with col_right:
-            st.subheader("📦 Product Category Revenue")
-            
-            alltime_categories_query = f"""
-            SELECT 
-                oi.product_category,
-                SUM(oi.line_total) as total_revenue
-            FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table} oi
-            GROUP BY oi.product_category
-            ORDER BY total_revenue DESC
-            """
-            
-            alltime_categories_df = session.sql(alltime_categories_query).to_pandas()
-            
-            if not alltime_categories_df.empty:
-                fig = px.bar(alltime_categories_df, x='PRODUCT_CATEGORY', y='TOTAL_REVENUE',
-                            labels={'PRODUCT_CATEGORY': 'Category', 'TOTAL_REVENUE': 'Revenue'},
-                            height=400)
+            st.markdown("#### 📦 Product Category Revenue")
+            cat_df = session.sql(f"""
+                SELECT product_category, SUM(line_total) as total_revenue
+                FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table}
+                GROUP BY product_category ORDER BY total_revenue DESC
+            """).to_pandas()
+
+            if not cat_df.empty:
+                fig = px.bar(cat_df, x='PRODUCT_CATEGORY', y='TOTAL_REVENUE',
+                            labels={'PRODUCT_CATEGORY': 'Category', 'TOTAL_REVENUE': 'Revenue'}, height=400)
                 st.plotly_chart(fig, width='stretch')
             else:
-                st.info("⚠️ No data available. Stream data first using Snowpipe Streaming.")
+                st.info("⚠️ No data available.")
 
         st.divider()
+        st.markdown("#### 📊 Product Category Sales by Order Size")
 
-        st.subheader("📊 Product Category Sales by Order Size")
+        stacked_df = session.sql(f"""
+            SELECT 
+                CASE
+                    WHEN o.total_amount < 100 THEN 'Small (<$100)'
+                    WHEN o.total_amount < 500 THEN 'Medium ($100-$500)'
+                    WHEN o.total_amount < 2000 THEN 'Large ($500-$2K)'
+                    ELSE 'Extra Large (>$2K)'
+                END AS order_size,
+                oi.product_category,
+                SUM(oi.line_total) as revenue
+            FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table} o
+            JOIN DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table} oi ON o.order_id = oi.order_id
+            GROUP BY order_size, oi.product_category
+            ORDER BY 
+                CASE order_size
+                    WHEN 'Small (<$100)' THEN 1
+                    WHEN 'Medium ($100-$500)' THEN 2
+                    WHEN 'Large ($500-$2K)' THEN 3
+                    WHEN 'Extra Large (>$2K)' THEN 4
+                END,
+                oi.product_category
+        """).to_pandas()
 
-        alltime_stacked_query = f"""
-        SELECT 
-            CASE
-                WHEN o.total_amount < 100 THEN 'Small (<$100)'
-                WHEN o.total_amount < 500 THEN 'Medium ($100-$500)'
-                WHEN o.total_amount < 2000 THEN 'Large ($500-$2K)'
-                ELSE 'Extra Large (>$2K)'
-            END AS order_size,
-            oi.product_category,
-            SUM(oi.line_total) as revenue
-        FROM DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{orders_table} o
-        JOIN DASH_AUTOMATED_INTELLIGENCE_DB.{schema}.{order_items_table} oi ON o.order_id = oi.order_id
-        GROUP BY order_size, oi.product_category
-        ORDER BY 
-            CASE order_size
-                WHEN 'Small (<$100)' THEN 1
-                WHEN 'Medium ($100-$500)' THEN 2
-                WHEN 'Large ($500-$2K)' THEN 3
-                WHEN 'Extra Large (>$2K)' THEN 4
-            END,
-            oi.product_category
-        """
-
-        alltime_stacked_df = session.sql(alltime_stacked_query).to_pandas()
-
-        if not alltime_stacked_df.empty:
-            fig = px.bar(alltime_stacked_df, x='ORDER_SIZE', y='REVENUE', color='PRODUCT_CATEGORY',
+        if not stacked_df.empty:
+            fig = px.bar(stacked_df, x='ORDER_SIZE', y='REVENUE', color='PRODUCT_CATEGORY',
                         labels={'ORDER_SIZE': 'Order Size', 'REVENUE': 'Revenue', 'PRODUCT_CATEGORY': 'Category'},
-                        height=500,
-                        barmode='stack')
+                        height=500, barmode='stack')
             fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
             st.plotly_chart(fig, width='stretch')
         else:
@@ -139,11 +106,74 @@ def render_summary_dashboard(schema: str, orders_table: str, order_items_table: 
 
     except Exception as e:
         st.error(str(e))
+    return staging_count
 
-tab1, tab2 = st.tabs(["🚀 Production", "🔧 Staging"])
+tab_staging, tab_production = st.tabs(["🔧 Staging (Live Ingestion)", "🚀 Production"])
 
-with tab1:
-    render_summary_dashboard("RAW", "ORDERS", "ORDER_ITEMS")
+with tab_staging:
+    st.caption("Data lands here via **Snowpipe Streaming** → Merge promotes to Production")
+    staging_rows = render_dashboard("STAGING", "ORDERS_STAGING", "ORDER_ITEMS_STAGING", show_customers=False)
 
-with tab2:
-    render_summary_dashboard("STAGING", "ORDERS_STAGING", "ORDER_ITEMS_STAGING")
+    st.divider()
+    st.subheader("🔄 Promote Staging → Production (MERGE)")
+    st.markdown("""
+This operation de-duplicates staging data (using `ROW_NUMBER`), then performs an **upsert** into 
+production tables — inserting new records and updating existing ones. After a successful merge, 
+confirmed rows are deleted from staging.
+""")
+    st.caption("⚡ Executed on **Gen2 Warehouse** (`HOL_GEN2_WH`) for optimized indexing")
+
+    with st.expander("View MERGE Procedure SQL", expanded=False):
+        st.code("""MERGE INTO raw.orders tgt
+USING (
+    SELECT *
+    FROM (
+        SELECT *,
+               ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY order_date DESC) as rn
+        FROM staging.orders_staging
+    )
+    WHERE rn = 1
+) src
+ON tgt.order_id = src.order_id
+WHEN MATCHED THEN UPDATE SET ...
+WHEN NOT MATCHED THEN INSERT ...;
+
+MERGE INTO raw.order_items tgt
+USING (
+    SELECT *
+    FROM (
+        SELECT *,
+               ROW_NUMBER() OVER (PARTITION BY order_item_id ORDER BY order_item_id) as rn
+        FROM staging.order_items_staging
+    )
+    WHERE rn = 1
+) src
+ON tgt.order_item_id = src.order_item_id
+WHEN MATCHED THEN UPDATE SET ...
+WHEN NOT MATCHED THEN INSERT ...;""", language="sql")
+
+    merge_done = st.session_state.get("merge_done", False)
+    has_data = staging_rows > 0
+
+    if merge_done:
+        st.success("✅ MERGE complete! Switch to **Production** tab to see updated data.")
+        if st.button("🔄 Reset"):
+            st.session_state["merge_done"] = False
+            st.rerun()
+    else:
+        if not has_data:
+            st.info("No data in staging to merge. Start Snowpipe Streaming to ingest data.")
+        if st.button("▶️ Run MERGE (Promote to Production)", type="primary", disabled=not has_data):
+            with st.spinner("Running MERGE on Gen2 Warehouse..."):
+                try:
+                    session.sql("USE WAREHOUSE HOL_GEN2_WH").collect()
+                    result = session.sql("CALL DASH_AUTOMATED_INTELLIGENCE_DB.STAGING.MERGE_STAGING_TO_RAW(TRUE)").collect()
+                    session.sql("USE WAREHOUSE HOL_WH").collect()
+                    st.session_state["merge_done"] = True
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"MERGE failed: {e}")
+
+with tab_production:
+    st.caption("📅 All-time historical data (after MERGE from Staging)")
+    render_dashboard("RAW", "ORDERS", "ORDER_ITEMS")

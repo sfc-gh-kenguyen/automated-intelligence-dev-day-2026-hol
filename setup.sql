@@ -340,6 +340,13 @@ BEGIN
     order_items_merged := SQLROWCOUNT;
     items_end := CURRENT_TIMESTAMP();
     
+    -- Delete only confirmed merged rows from staging
+    DELETE FROM staging.order_items_staging
+    WHERE order_item_id IN (SELECT order_item_id FROM raw.order_items);
+    
+    DELETE FROM staging.orders_staging
+    WHERE order_id IN (SELECT order_id FROM raw.orders);
+    
     end_time := CURRENT_TIMESTAMP();
     
     IF (return_timing) THEN
