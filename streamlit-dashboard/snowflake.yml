@@ -7,7 +7,7 @@ entities:
       schema: RAW
       database: DASH_AUTOMATED_INTELLIGENCE_DB
     title: "The Dash Board"
-    query_warehouse: AUTOMATED_INTELLIGENCE_WH
+    query_warehouse: HOL_WH
     main_file: streamlit_app.py
     stage: DASH_AUTOMATED_INTELLIGENCE_DB.RAW.THE_DASHBOARD_STAGE
     artifacts:
