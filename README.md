@@ -19,6 +19,7 @@
   - [Section 11: Security & Governance](#section-11-security--governance-5-min--coco)
   - [Section 12: Streamlit Dashboard](#section-12-streamlit-dashboard-5-min--coco)
 - [Summary](#summary)
+- [Cleanup](#cleanup)
 - [Resources](#resources)
 
 ---
@@ -432,6 +433,16 @@ Open in Snowsight to see all the data flowing through the system — live ingest
 
 **Manual: 4 sections** (setup, streaming, interactive, CoCo install)  
 **CoCo: 9 sections** (Gen2, DTs, Iceberg, DQ, dbt, Cortex AI, Intelligence, Security, Streamlit)
+
+---
+
+## Cleanup
+
+To remove all objects created during the lab, run [`cleanup.sql`](cleanup.sql):
+
+```bash
+snow sql -f cleanup.sql -c <your-connection>
+```
 
 ---
 
