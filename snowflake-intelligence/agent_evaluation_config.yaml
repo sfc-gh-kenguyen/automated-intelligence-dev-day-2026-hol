@@ -1,0 +1,22 @@
+dataset:
+  dataset_type: "CORTEX AGENT"
+  table_name: "DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.AGENT_EVALUATION_DATA"
+  dataset_name: "BUSINESS_INSIGHTS_EVAL_DATASET"
+  column_mapping:
+    query_text: "INPUT_QUERY"
+    ground_truth: "GROUND_TRUTH"
+
+evaluation:
+  agent_params:
+    agent_name: "DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT"
+    agent_type: "CORTEX AGENT"
+  run_params:
+    label: "HOL Agent Evaluation"
+    description: "Evaluate Business Insights Agent with answer correctness and logical consistency"
+  source_metadata:
+    type: "dataset"
+    dataset_name: "BUSINESS_INSIGHTS_EVAL_DATASET"
+
+metrics:
+  - "answer_correctness"
+  - "logical_consistency"

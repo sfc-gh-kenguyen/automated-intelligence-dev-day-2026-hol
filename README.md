@@ -17,6 +17,7 @@
   - [Section 10: Snowflake Intelligence](#section-10-snowflake-intelligence-10-min--coco)
   - [Section 11: Security & Governance](#section-11-security--governance-5-min--snowflake-intelligence)
   - [Section 12: Streamlit Dashboard](#section-12-streamlit-dashboard-5-min--coco)
+  - [Section 13: Agent Evaluation](#section-13-agent-evaluation-5-min--coco)
 - [Cleanup](#cleanup)
 - [Resources](#resources)
 
@@ -382,6 +383,44 @@ Also explore: `demos/security-rbac.sql` (reference queries)
 CoCo will run `snow streamlit deploy` from the `streamlit-dashboard/` directory.
 
 Open in Snowsight to see the data pipeline in action — staging ingestion, Gen2 MERGE to production, pipeline health, and product analytics.
+
+---
+
+### Section 13: Agent Evaluation (5 min) — CoCo + Snowsight
+
+The evaluation dataset (7 questions + ground truth) was created by `setup.sql`. Now run the evaluation:
+
+#### Run via Snowsight UI
+
+1. Navigate to **AI & ML → Agents → BUSINESS_INSIGHTS_AGENT → Evaluations** tab
+2. Click **New evaluation run**
+3. Name it (e.g. `hol-eval-run-1`)
+4. Select **Create new dataset** → source table: `DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.AGENT_EVALUATION_DATA`
+5. Map columns: `INPUT_QUERY` → query_text, `GROUND_TRUTH` → ground_truth
+6. Toggle on **Answer Correctness** and **Logical Consistency**
+7. Click **Create** — evaluation starts automatically (~3 min)
+
+#### Interpret Results
+
+After ~3 minutes, view results in the **Evaluations** tab:
+
+- **Answer Correctness** — Did the agent's response match the expected ground truth? Scored 0–1 per question.
+- **Logical Consistency** — Were the agent's planning steps, tool calls, and final response internally consistent? (Reference-free — no ground truth needed.)
+- **Per-question drill-down** — Select any row to see the full thread: planning → tool invocations → response generation.
+- **Trace details** — Inspect which tools were called, what parameters were passed, and what each tool returned.
+
+This is how you validate agent quality before deploying to production — catch regressions, verify tool routing, and ensure response accuracy.
+
+#### Improve Scores (Stretch Exercise)
+
+If any questions score low on **logical consistency**, inspect the trace to see what happened:
+
+1. Click on a low-scoring row → view **Thread details** → check the "Planning" step
+2. Look for vague or missing reasoning about tool selection
+3. Update the agent's `instructions.orchestration` to be more explicit (e.g., add "Before calling any tool, explicitly state which tool you will use and why")
+4. Recreate the agent and re-run the evaluation with a new run name
+
+> **Tip:** Evaluation scores can vary between runs due to LLM non-determinism. Run multiple evaluations and compare averages for reliable signal.
 
 ---
 
