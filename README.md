@@ -10,7 +10,7 @@
   - [Section 3: Gen2 Warehouse & MERGE](#section-3-gen2-warehouse--merge-5-min--coco)
   - [Section 4: Dynamic Tables Pipeline](#section-4-dynamic-tables-pipeline-5-min--coco)
   - [Section 5: Iceberg Tables & V3 Features](#section-5-iceberg-tables--v3-features-7-min--coco)
-  - [Section 6: Interactive Tables](#section-6-interactive-tables-5-min--manual)
+  - [Section 6: Interactive Tables](#section-6-interactive-tables-5-min--coco--manual)
   - [Section 7: Data Quality](#section-7-data-quality-5-min--coco)
   - [Section 8: dbt Analytics](#section-8-dbt-analytics-10-min--coco)
   - [Section 9: Cortex AI Functions](#section-9-cortex-ai-functions-5-min--coco)
@@ -273,14 +273,15 @@ Also explore: `demos/iceberg.sql`
 
 ---
 
-### Section 6: Interactive Tables (5 min) — MANUAL
+### Section 6: Interactive Tables (5 min) — CoCo + Manual
 
-Run point-lookup queries directly in **Snowsight** to observe raw latency in the query profile:
+Run point-lookup queries in **Snowsight** to observe sub-second latency:
 
 ```sql
 USE WAREHOUSE hol_interactive_wh;
+ALTER SESSION SET USE_CACHED_RESULT = FALSE;
 
--- Point lookup by customer ID (observe latency in query profile)
+-- Point lookup by customer ID
 SELECT * FROM dash_automated_intelligence_db.interactive.customer_order_analytics
 WHERE customer_id = 1;
 
@@ -289,7 +290,14 @@ SELECT * FROM dash_automated_intelligence_db.interactive.order_lookup
 WHERE order_id = '<any-order-uuid-from-raw.orders>';
 ```
 
-Check the query profile for fast execution time.
+Check the query profile — sub-second execution on 50M rows.
+
+**Concurrency load test (the wow moment):**
+
+> **Prompt CoCo:**  
+> *"Run the interactive tables load test at interactive/load_test.py"*
+
+This fires 200 concurrent sessions (1000 queries total) against both Interactive and Standard warehouses, then compares P50/P90/P99 latencies. Expected result: **~10x faster P50** on Interactive.
 
 ---
 
