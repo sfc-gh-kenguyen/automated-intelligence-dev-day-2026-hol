@@ -1137,34 +1137,34 @@ CREATE OR REPLACE STAGE dash_automated_intelligence_db.raw.hol_data_stage
 COPY INTO dash_automated_intelligence_db.raw.customers
 FROM @dash_automated_intelligence_db.raw.hol_data_stage/parquet/
 FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
-PATTERN = 'customers.*\.parquet'
+PATTERN = '.*customers.*\.parquet'
 MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
 FORCE = TRUE;
 
 COPY INTO dash_automated_intelligence_db.raw.orders
 FROM @dash_automated_intelligence_db.raw.hol_data_stage/parquet/
 FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
-PATTERN = 'orders_.*\.parquet'
+PATTERN = '.*orders_.*\.parquet'
 MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
 FORCE = TRUE;
 
 COPY INTO dash_automated_intelligence_db.raw.order_items
 FROM @dash_automated_intelligence_db.raw.hol_data_stage/parquet/
 FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
-PATTERN = 'order_items_.*\.parquet'
+PATTERN = '.*order_items_.*\.parquet'
 MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
 FORCE = TRUE;
 
 COPY INTO dash_automated_intelligence_db.raw.product_reviews
 FROM @dash_automated_intelligence_db.raw.hol_data_stage/
 FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.csv_format')
-PATTERN = 'product_reviews\.csv'
+PATTERN = '.*product_reviews\.csv'
 FORCE = TRUE;
 
 COPY INTO dash_automated_intelligence_db.raw.support_tickets
 FROM @dash_automated_intelligence_db.raw.hol_data_stage/
 FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.csv_format')
-PATTERN = 'support_tickets\.csv'
+PATTERN = '.*support_tickets\.csv'
 FORCE = TRUE;
 
 -- ============================================================================
