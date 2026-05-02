@@ -1190,6 +1190,7 @@ ALTER CORTEX SEARCH SERVICE dash_automated_intelligence_db.raw.customer_feedback
 -- ============================================================================
 
 USE SCHEMA dash_automated_intelligence_db.interactive;
+USE WAREHOUSE hol_wh;
 
 CREATE OR REPLACE INTERACTIVE TABLE customer_order_analytics
   CLUSTER BY (customer_id)
