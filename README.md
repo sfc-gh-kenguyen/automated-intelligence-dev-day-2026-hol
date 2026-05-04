@@ -36,9 +36,9 @@ In this hands-on lab, you'll build a complete AI-powered retail analytics platfo
 - Build analytical models with dbt
 - Monitor data quality automatically with Data Metric Functions
 - Create and query managed Iceberg V3 tables (deletion vectors, row lineage)
-- Classify and filter data with Cortex AI functions (AI_CLASSIFY, AI_FILTER)
 - Create custom CoCo skills for reusable team workflows
 - Build a Cortex Agent with Cortex Analyst (semantic view + verified queries) and Agentic Search (multi-index Cortex Search)
+- Evaluate agent quality with ground-truth datasets and LLM judges
 - Expose agents as managed MCP servers for external AI clients
 - Implement transparent row-level security with Row Access Policies
 
