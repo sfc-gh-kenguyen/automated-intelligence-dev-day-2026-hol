@@ -757,10 +757,13 @@ ALTER TABLE orders ADD DATA METRIC FUNCTION
   SNOWFLAKE.CORE.NULL_COUNT ON (total_amount);
 
 -- Add NULL_COUNT DMFs to order_items table
+-- NOTE: Intentionally monitoring product_category instead of product_name (mis-attached)
+-- This is a deliberate error for attendees to discover and fix in Section 7
 ALTER TABLE order_items ADD DATA METRIC FUNCTION 
   SNOWFLAKE.CORE.NULL_COUNT ON (order_item_id),
   SNOWFLAKE.CORE.NULL_COUNT ON (order_id),
   SNOWFLAKE.CORE.NULL_COUNT ON (product_id),
+  SNOWFLAKE.CORE.NULL_COUNT ON (product_category),
   SNOWFLAKE.CORE.NULL_COUNT ON (quantity),
   SNOWFLAKE.CORE.NULL_COUNT ON (unit_price);
 
@@ -1186,6 +1189,15 @@ SELECT order_item_id FROM dash_automated_intelligence_db.raw.order_items SAMPLE 
 UPDATE dash_automated_intelligence_db.raw.order_items oi
 SET quantity = NULL
 FROM dash_automated_intelligence_db.raw.dq_bad_items b
+WHERE oi.order_item_id = b.order_item_id;
+
+-- Also inject NULLs into product_name (NOT monitored by DMF — intentional gap)
+CREATE OR REPLACE TEMPORARY TABLE dash_automated_intelligence_db.raw.dq_bad_items_names AS
+SELECT order_item_id FROM dash_automated_intelligence_db.raw.order_items SAMPLE (150 ROWS);
+
+UPDATE dash_automated_intelligence_db.raw.order_items oi
+SET product_name = NULL
+FROM dash_automated_intelligence_db.raw.dq_bad_items_names b
 WHERE oi.order_item_id = b.order_item_id;
 
 -- Fire the alert immediately so results are available by Section 7

@@ -306,22 +306,28 @@ This fires 200 concurrent sessions (1000 queries total) against both Interactive
 
 ### Section 7: Data Quality (5 min) — CoCo
 
-The setup script intentionally injected ~200 NULL values into `orders.total_amount` and `order_items.quantity` to simulate real data quality issues. The DMFs have already detected these violations, and the alert has fired.
+The setup script intentionally injected ~200 NULL values into `orders.total_amount` and `order_items.quantity`, plus ~150 NULLs into `order_items.product_name`. DMFs have already detected the first two — but there's a gap.
 
 > **Prompt CoCo:**  
 > *"Check the data quality monitoring results and show me which columns have NULL violations"*
 
-CoCo will query `vw_dq_monitoring_results` and show that `TOTAL_AMOUNT` (200 NULLs) and `QUANTITY` (200 NULLs) have violations.
+CoCo will show that `TOTAL_AMOUNT` and `QUANTITY` have violations — but `product_name` NULLs are going **undetected**.
 
-Follow up:
-> *"Show me the alert history for data quality issues"*
+**Discover the gap:**
+> *"Are there any NULL values in order_items.product_name? Is that column being monitored?"*
 
-CoCo will query `data_quality_alerts` and show the fired alert with timestamp and summary.
+CoCo will find ~150 NULLs and reveal the DMF is mis-attached to `product_category` instead of `product_name`.
 
-Then confirm the scope:
-> *"How many orders have NULL total_amount?"*
+**Fix it:**
+> *"Fix the DMF — remove the NULL check from product_category and add it to product_name instead"*
 
-> **Snowsight:** You can also view data quality results visually — navigate to **Data → Databases → DASH_AUTOMATED_INTELLIGENCE_DB → RAW → ORDERS → Data Quality** tab.
+CoCo will run:
+```sql
+ALTER TABLE order_items DROP DATA METRIC FUNCTION SNOWFLAKE.CORE.NULL_COUNT ON (product_category);
+ALTER TABLE order_items ADD DATA METRIC FUNCTION SNOWFLAKE.CORE.NULL_COUNT ON (product_name);
+```
+
+This demonstrates the real-world workflow: monitor → discover gaps → fix coverage.
 
 Also explore: `demos/data-quality.sql`
 
