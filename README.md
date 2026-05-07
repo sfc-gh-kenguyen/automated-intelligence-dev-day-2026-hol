@@ -70,9 +70,13 @@ Row Access Policies (transparent security)
 
 Complete these steps **before** the lab begins.
 
-### 1. Snowflake Account (provided)
+### 1. Snowflake Account
 
-You will receive login credentials for a pre-provisioned Snowflake account. Verify you can log in at:
+Create a trial account for this lab at:
+
+**http://signup.snowflake.com/summit2026**
+
+Once your account is provisioned, verify you can log in at:
 ```
 https://<account-identifier>.snowflakecomputing.com
 ```
