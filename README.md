@@ -271,12 +271,12 @@ CoCo will:
 3. Run a filtered query and show partitions scanned vs total
 
 Then explore V3 features:
-> *"Create an Iceberg V3 table from RAW.ORDERS (FORMAT_VERSION=3), update 10 rows to demonstrate deletion vectors, then show me the row lineage fields _row_id and _last_updated_sequence_number"*
+> *"Create an Iceberg V3 table from RAW.ORDERS (ICEBERG_VERSION=3) with merge-on-read enabled, insert 1000 rows, then update 10 of them to demonstrate deletion vectors"*
 
 CoCo will:
-1. Create a V3 Iceberg table
-2. Run an UPDATE (uses deletion vectors instead of full file rewrite)
-3. Query row lineage metadata fields
+1. Create a V3 Iceberg table with `ICEBERG_VERSION = 3` and `ENABLE_ICEBERG_MERGE_ON_READ = TRUE`
+2. Insert sample data
+3. Run an UPDATE (uses deletion vectors instead of full file rewrite — no data files are rewritten)
 
 Finally:
 > *"Add a new column 'priority' with default value 'STANDARD' to the V3 table and show that existing rows get the default without a backfill"*
@@ -312,6 +312,8 @@ Check the query profile — sub-second execution on 50M rows.
 > *"Run the interactive tables load test at interactive/load_test.py"*
 
 This fires 200 concurrent sessions (1000 queries total) against both Interactive and Standard warehouses, then compares P50/P90/P99 latencies. Expected result: **~10x faster P50** on Interactive.
+
+> **Tip:** The first run after setup may show modest gains (~2x) while the Interactive Table cache warms up. Run the load test a **second time** for the full wow moment (~10-12x speedup).
 
 ---
 
