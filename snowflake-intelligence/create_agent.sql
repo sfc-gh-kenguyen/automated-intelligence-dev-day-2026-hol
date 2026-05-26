@@ -96,11 +96,11 @@ $$;
 -- Verify Agent
 SHOW AGENTS LIKE 'BUSINESS_INSIGHTS_AGENT' IN SCHEMA DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC;
 
--- Set agent profile for Snowflake Intelligence display
+-- Set agent profile for Snowflake CoWork display
 ALTER AGENT DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT
   SET PROFILE = '{"display_name": "Business Insights", "color": "#29B5E8"}';
 
--- Make agent visible in Snowflake Intelligence
+-- Make agent visible in Snowflake CoWork
 -- On fresh accounts (no SI object), agents auto-appear — no action needed.
 -- If the account already has a SI object, uncomment the following:
 -- ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT;

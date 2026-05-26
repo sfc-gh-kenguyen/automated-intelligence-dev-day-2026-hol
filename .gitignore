@@ -460,3 +460,4 @@ dbt-analytics/.user.yml
 
 # Streamlit deploy output (symlinks)
 **/output/bundle/streamlit-dashboard/output/
+.context/

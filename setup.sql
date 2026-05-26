@@ -892,7 +892,7 @@ WHEN NOT MATCHED THEN
 
 -- ============================================================================
 -- STEP 7: Cortex Search Service (Act 3 - Intelligence & Governance)
--- Purpose: Semantic search over product catalog for Snowflake Intelligence
+-- Purpose: Semantic search over product catalog for Snowflake CoWork
 -- ============================================================================
 
 -- Enable change tracking on product catalog for Cortex Search
