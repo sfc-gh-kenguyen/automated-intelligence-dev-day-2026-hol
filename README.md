@@ -535,3 +535,9 @@ snow sql -f cleanup.sql -c <your-connection>
 - [Data Metric Functions](https://docs.snowflake.com/en/user-guide/data-quality-intro)
 - [Row Access Policies](https://docs.snowflake.com/en/user-guide/security-row-intro)
 - [Snowflake CoCo](https://docs.snowflake.com/en/user-guide/cortex-code/cortex-code)
+
+---
+
+## License
+
+This project is licensed under the [Apache License, Version 2.0](LICENSE).
