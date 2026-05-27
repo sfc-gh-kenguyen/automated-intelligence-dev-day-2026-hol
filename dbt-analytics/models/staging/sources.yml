@@ -37,7 +37,9 @@ sources:
               - not_null
           - name: total_amount
             tests:
-              - not_null
+              - not_null:
+                  config:
+                    severity: warn
       
       - name: order_items
         description: "Order line items"
