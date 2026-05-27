@@ -41,8 +41,8 @@ GRANT CREATE WAREHOUSE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
 -- ============================================================================
 -- DATA SCALE CONFIGURATION
 -- ============================================================================
--- Default: '10M' (~5 min setup, ~6x Interactive Tables speedup)
--- Full:    '50M' (~15 min setup, ~10x Interactive Tables speedup)
+-- Default: '10M' (~5 min setup)
+-- Full:    '50M' (~15 min setup, better Interactive Tables contrast)
 --
 -- To load 50M rows, change the value below before running.
 -- WARNING: 50M takes approximately 3x longer to load and refresh.
