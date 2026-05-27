@@ -39,6 +39,17 @@ GRANT CREATE DATABASE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
 GRANT CREATE WAREHOUSE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
 
 -- ============================================================================
+-- DATA SCALE CONFIGURATION
+-- ============================================================================
+-- Default: '10M' (~5 min setup, ~6x Interactive Tables speedup)
+-- Full:    '50M' (~15 min setup, ~10x Interactive Tables speedup)
+--
+-- To load 50M rows, change the value below before running.
+-- WARNING: 50M takes approximately 3x longer to load and refresh.
+-- ============================================================================
+SET data_scale = '10M';
+
+-- ============================================================================
 -- MAIN SETUP: Continue as ACCOUNTADMIN (PAT sessions cannot switch roles)
 -- ============================================================================
 
@@ -1144,19 +1155,49 @@ PATTERN = '.*customers.*\.parquet'
 MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
 FORCE = TRUE;
 
-COPY INTO dash_automated_intelligence_db.raw.orders
-FROM @dash_automated_intelligence_db.raw.hol_data_stage/parquet/
-FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
-PATTERN = '.*orders_.*\.parquet'
-MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
-FORCE = TRUE;
+EXECUTE IMMEDIATE $$
+DECLARE
+  scale VARCHAR DEFAULT (SELECT $data_scale);
+BEGIN
+  IF (scale = '50M') THEN
+    COPY INTO dash_automated_intelligence_db.raw.orders
+    FROM @dash_automated_intelligence_db.raw.hol_data_stage/parquet/
+    FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
+    PATTERN = '.*orders_.*\.parquet'
+    MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+    FORCE = TRUE;
+  ELSE
+    COPY INTO dash_automated_intelligence_db.raw.orders
+    FROM @dash_automated_intelligence_db.raw.hol_data_stage/parquet/
+    FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
+    PATTERN = '.*orders_00[12]\.parquet'
+    MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+    FORCE = TRUE;
+  END IF;
+END;
+$$;
 
-COPY INTO dash_automated_intelligence_db.raw.order_items
-FROM @dash_automated_intelligence_db.raw.hol_data_stage/parquet/
-FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
-PATTERN = '.*order_items_.*\.parquet'
-MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
-FORCE = TRUE;
+EXECUTE IMMEDIATE $$
+DECLARE
+  scale VARCHAR DEFAULT (SELECT $data_scale);
+BEGIN
+  IF (scale = '50M') THEN
+    COPY INTO dash_automated_intelligence_db.raw.order_items
+    FROM @dash_automated_intelligence_db.raw.hol_data_stage/parquet/
+    FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
+    PATTERN = '.*order_items_.*\.parquet'
+    MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+    FORCE = TRUE;
+  ELSE
+    COPY INTO dash_automated_intelligence_db.raw.order_items
+    FROM @dash_automated_intelligence_db.raw.hol_data_stage/parquet/
+    FILE_FORMAT = (FORMAT_NAME = 'dash_automated_intelligence_db.raw.parquet_format')
+    PATTERN = '.*order_items_00[12]\.parquet'
+    MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+    FORCE = TRUE;
+  END IF;
+END;
+$$;
 
 COPY INTO dash_automated_intelligence_db.raw.product_reviews
 FROM @dash_automated_intelligence_db.raw.hol_data_stage/
