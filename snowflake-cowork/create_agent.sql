@@ -100,6 +100,10 @@ SHOW AGENTS LIKE 'BUSINESS_INSIGHTS_AGENT' IN SCHEMA DASH_AUTOMATED_INTELLIGENCE
 ALTER AGENT DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT
   SET PROFILE = '{"display_name": "Business Insights", "color": "#29B5E8"}';
 
+-- Grant WEST_COAST_MANAGER access to the agent (for Security & Governance demo)
+GRANT USAGE ON SCHEMA DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC TO ROLE WEST_COAST_MANAGER;
+GRANT USAGE ON AGENT DASH_AUTOMATED_INTELLIGENCE_DB.SEMANTIC.BUSINESS_INSIGHTS_AGENT TO ROLE WEST_COAST_MANAGER;
+
 -- Make agent visible in Snowflake CoWork
 -- On fresh accounts (no SI object), agents auto-appear — no action needed.
 -- If the account already has a SI object, uncomment the following:
