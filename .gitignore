@@ -459,5 +459,5 @@ talk/codebase-summary.md
 dbt-analytics/.user.yml
 
 # Streamlit deploy output (symlinks)
-**/output/bundle/streamlit-dashboard/output/
+streamlit-dashboard/output/
 .context/

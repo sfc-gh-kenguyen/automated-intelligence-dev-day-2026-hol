@@ -22,7 +22,7 @@ USE WAREHOUSE AUTOMATED_INTELLIGENCE_GEN2_WH;  -- Must use Gen2 warehouse
 -- Check warehouse configuration
 SHOW WAREHOUSES LIKE 'AUTOMATED_INTELLIGENCE_GEN2_WH';
 
--- Verify it's Gen2 (RESOURCE_CONSTRAINT = STANDARD_GEN_2)
+-- Verify it's Gen2 (GENERATION = '2')
 SELECT 
     "name" AS warehouse_name,
     "type" AS warehouse_type,

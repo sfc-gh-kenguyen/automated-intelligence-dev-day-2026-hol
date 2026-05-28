@@ -1355,8 +1355,8 @@ USE SCHEMA RAW;
 CREATE OR REPLACE ROW ACCESS POLICY customers_region_policy
 AS (state VARCHAR) RETURNS BOOLEAN ->
     CASE 
-        WHEN IS_ROLE_IN_SESSION('AUTOMATED_INTELLIGENCE_ADMIN') OR IS_ROLE_IN_SESSION('ACCOUNTADMIN') THEN TRUE
-        WHEN IS_ROLE_IN_SESSION('WEST_COAST_MANAGER') 
+        WHEN CURRENT_ROLE() IN ('AUTOMATED_INTELLIGENCE_ADMIN', 'ACCOUNTADMIN') THEN TRUE
+        WHEN CURRENT_ROLE() = 'WEST_COAST_MANAGER'
              AND state IN ('CA', 'OR', 'WA') THEN TRUE
         ELSE FALSE
     END
@@ -1378,18 +1378,18 @@ CREATE OR REPLACE TABLE agent_evaluation_data (
 );
 
 INSERT INTO agent_evaluation_data
-SELECT 'Show me monthly revenue trend from June 2025 to April 2026',
-       PARSE_JSON('{"ground_truth_output": "The agent should query structured business data using the query_business_data tool to produce a monthly revenue breakdown. The response should include revenue figures for each month from June 2025 through April 2026, showing seasonal peaks in November-January and a notable drop in February 2026."}')
-UNION ALL SELECT 'Revenue dropped in February — what caused it and what do reviews say?',
-       PARSE_JSON('{"ground_truth_output": "The agent should use BOTH query_business_data and search_customer_feedback. The response should connect the quantitative drop to qualitative reasons like increased cancellations, negative reviews, or customer complaints."}')
+SELECT 'Show me monthly revenue trend from June to September 2025',
+       PARSE_JSON('{"ground_truth_output": "The agent should query structured business data using the query_business_data tool to produce a monthly revenue breakdown. The response should include revenue figures for each month from June 2025 through September 2025."}')
+UNION ALL SELECT 'Which month had the lowest revenue, and what do customer reviews say about that period?',
+       PARSE_JSON('{"ground_truth_output": "The agent should use BOTH query_business_data and search_customer_feedback. The response should identify the lowest-revenue month from structured data and connect it to qualitative customer feedback from reviews or tickets during that period."}')
 UNION ALL SELECT 'Find reviews mentioning wrong size with a rating below 3',
        PARSE_JSON('{"ground_truth_output": "The agent should use search_customer_feedback to find product reviews that mention sizing issues with low ratings below 3. Results should include specific review content, product names, and ratings."}')
 UNION ALL SELECT 'Why are customers returning ski boots?',
        PARSE_JSON('{"ground_truth_output": "The agent should search customer feedback related to ski boot returns. The response should identify common return reasons such as sizing issues, comfort problems, or quality concerns, citing specific customer feedback."}')
 UNION ALL SELECT 'What is our total revenue and customer count by state?',
        PARSE_JSON('{"ground_truth_output": "The agent should use query_business_data to aggregate total revenue and distinct customer count grouped by state. The response should include states with their corresponding revenue and customer counts."}')
-UNION ALL SELECT 'What are the top complaint themes in support tickets from February 2026?',
-       PARSE_JSON('{"ground_truth_output": "The agent should use search_customer_feedback to find and analyze support tickets from February 2026. The response should identify main complaint themes with examples from actual tickets."}')
+UNION ALL SELECT 'What are the top complaint themes in support tickets?',
+       PARSE_JSON('{"ground_truth_output": "The agent should use search_customer_feedback to find and analyze support tickets. The response should identify main complaint themes with examples from actual tickets."}')
 UNION ALL SELECT 'How many reviews mention sizing issues, and which products are most affected?',
        PARSE_JSON('{"ground_truth_output": "The agent should use search_customer_feedback to find reviews mentioning sizing issues. The response should provide a count and identify which products are most frequently mentioned in sizing complaints."}');
 
