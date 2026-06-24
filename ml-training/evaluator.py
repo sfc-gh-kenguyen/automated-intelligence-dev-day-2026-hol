@@ -1,3 +1,5 @@
+# Model evaluation with ROC-AUC, F1, and classification metrics
+# Co-authored with CoCo
 import logging
 from dataclasses import dataclass
 from typing import List
@@ -9,6 +11,7 @@ from sklearn.metrics import (
     f1_score,
     precision_score,
     recall_score,
+    roc_auc_score,
 )
 
 from trainer import TrainingResult
@@ -22,20 +25,23 @@ class EvaluationResult:
     precision: float
     recall: float
     f1: float
+    roc_auc: float
     feature_importances: pd.DataFrame
     classification_report_text: str
 
 
 def evaluate(result: TrainingResult, feature_columns: List[str]) -> EvaluationResult:
     y_pred = result.model.predict(result.X_test)
+    y_prob = result.model.predict_proba(result.X_test)[:, 1]
 
     accuracy = accuracy_score(result.y_test, y_pred)
-    precision = precision_score(result.y_test, y_pred)
-    recall = recall_score(result.y_test, y_pred)
-    f1 = f1_score(result.y_test, y_pred)
+    precision = precision_score(result.y_test, y_pred, zero_division=0)
+    recall = recall_score(result.y_test, y_pred, zero_division=0)
+    f1 = f1_score(result.y_test, y_pred, zero_division=0)
+    roc_auc = roc_auc_score(result.y_test, y_prob)
 
     report_text = classification_report(
-        result.y_test, y_pred, target_names=["Not Purchased", "Purchased"]
+        result.y_test, y_pred, target_names=["Not Purchased", "Purchased"], zero_division=0
     )
 
     importances = pd.DataFrame({
@@ -43,13 +49,14 @@ def evaluate(result: TrainingResult, feature_columns: List[str]) -> EvaluationRe
         "importance": result.model.feature_importances_,
     }).sort_values("importance", ascending=False)
 
-    logger.info(f"Evaluation — Accuracy: {accuracy:.4f}, F1: {f1:.4f}")
+    logger.info(f"Evaluation — Accuracy: {accuracy:.4f}, F1: {f1:.4f}, ROC-AUC: {roc_auc:.4f}")
 
     return EvaluationResult(
         accuracy=accuracy,
         precision=precision,
         recall=recall,
         f1=f1,
+        roc_auc=roc_auc,
         feature_importances=importances,
         classification_report_text=report_text,
     )
@@ -66,6 +73,7 @@ def print_report(eval_result: EvaluationResult, training_time: float, used_gpu: 
     print(f"   Precision: {eval_result.precision:.4f}")
     print(f"   Recall:    {eval_result.recall:.4f}")
     print(f"   F1 Score:  {eval_result.f1:.4f}")
+    print(f"   ROC-AUC:   {eval_result.roc_auc:.4f}")
     print(f"\nBusiness Impact:")
     print(f"   {eval_result.precision * 100:.1f}% of recommendations will be relevant")
     print(f"   We'll capture {eval_result.recall * 100:.1f}% of products customers want")

@@ -1,3 +1,5 @@
+# Model registry manager for saving trained models to Snowflake ML Registry
+# Co-authored with CoCo
 import datetime
 import logging
 import time
@@ -36,6 +38,7 @@ def save_to_registry(
         "precision": float(eval_result.precision),
         "recall": float(eval_result.recall),
         "f1_score": float(eval_result.f1),
+        "roc_auc": float(eval_result.roc_auc),
         "training_samples": int(len(training_result.X_train)),
         "test_samples": int(len(training_result.X_test)),
         "training_time_seconds": float(training_result.training_time),
@@ -45,7 +48,7 @@ def save_to_registry(
     comment = (
         f"XGBoost product recommender. "
         f"Trained on {len(training_result.X_train):,} customer-product pairs. "
-        f"F1: {eval_result.f1:.4f}"
+        f"F1: {eval_result.f1:.4f}, ROC-AUC: {eval_result.roc_auc:.4f}"
     )
 
     for attempt in range(1, MAX_RETRIES + 1):

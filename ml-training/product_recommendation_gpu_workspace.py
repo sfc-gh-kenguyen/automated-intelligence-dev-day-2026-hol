@@ -1,4 +1,5 @@
 # Product Recommendation Model with GPU Training (Workspaces)
+# Co-authored with CoCo
 #
 # GPU-accelerated ML model training in Snowflake Notebooks in Workspaces.
 # Predicts which products a customer is likely to purchase next.

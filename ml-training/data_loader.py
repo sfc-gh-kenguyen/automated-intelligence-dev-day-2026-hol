@@ -1,3 +1,5 @@
+# Data loading and feature engineering for product recommendation model
+# Co-authored with CoCo
 import logging
 import time
 from typing import Tuple
@@ -80,7 +82,6 @@ negative_examples AS (
     FROM customer_history ch
     CROSS JOIN product_popularity pp
     WHERE NOT CONTAINS(ch.PURCHASED_PRODUCTS, pp.PRODUCT_ID)
-    SAMPLE (10 ROWS)
 )
 SELECT * FROM positive_examples
 UNION ALL

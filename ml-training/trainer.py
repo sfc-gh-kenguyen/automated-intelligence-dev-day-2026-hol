@@ -1,3 +1,5 @@
+# XGBoost model trainer for product recommendation
+# Co-authored with CoCo
 import logging
 import time
 from dataclasses import dataclass
@@ -33,7 +35,7 @@ def _detect_gpu() -> bool:
     except ImportError:
         pass
     try:
-        probe = xgb.XGBClassifier(tree_method="gpu_hist", n_estimators=1, verbosity=0)
+        probe = xgb.XGBClassifier(device="cuda", tree_method="hist", n_estimators=1, verbosity=0)
         probe.fit([[0]], [0])
         return True
     except xgb.core.XGBoostError:
@@ -60,14 +62,19 @@ def train_model(pdf: pd.DataFrame, config: TrainingConfig) -> TrainingResult:
     )
     logger.info(f"Split: {len(X_train):,} train / {len(X_test):,} test")
 
+    neg_count = (y_train == 0).sum()
+    pos_count = (y_train == 1).sum()
+    scale_pos_weight = neg_count / pos_count if pos_count > 0 else 1.0
+    logger.info(f"Class balance — negative: {neg_count:,}, positive: {pos_count:,}, scale_pos_weight: {scale_pos_weight:.2f}")
+
     gpu_available = _detect_gpu()
-    tree_method = "gpu_hist" if gpu_available else "hist"
-    logger.info(f"Training with tree_method={tree_method} ({'GPU' if gpu_available else 'CPU'})")
+    device = "cuda" if gpu_available else "cpu"
+    logger.info(f"Training with device={device} ({'GPU' if gpu_available else 'CPU'})")
 
     params = config.to_xgb_params()
-    params["tree_method"] = tree_method
-    if gpu_available:
-        params["predictor"] = "gpu_predictor"
+    params["tree_method"] = "hist"
+    params["device"] = device
+    params["scale_pos_weight"] = scale_pos_weight
 
     model = xgb.XGBClassifier(**params)
 
