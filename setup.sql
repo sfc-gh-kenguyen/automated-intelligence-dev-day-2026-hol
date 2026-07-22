@@ -782,19 +782,13 @@ ALTER TABLE order_items ADD DATA METRIC FUNCTION
 -- Note: SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS view may not exist in all accounts
 -- This custom view uses the table function approach which works universally
 CREATE OR REPLACE VIEW vw_dq_monitoring_results AS
-SELECT * FROM TABLE(
-  SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS(
-    REF_ENTITY_NAME => 'dash_automated_intelligence_db.raw.orders',
-    REF_ENTITY_DOMAIN => 'table'
-  )
+SELECT *
+FROM SNOWFLAKE.ACCOUNT_USAGE.DATA_QUALITY_MONITORING_RESULTS
+WHERE REF_ENTITY_NAME IN (
+    'dash_automated_intelligence_db.raw.orders',
+    'dash_automated_intelligence_db.raw.order_items'
 )
-UNION ALL
-SELECT * FROM TABLE(
-  SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS(
-    REF_ENTITY_NAME => 'dash_automated_intelligence_db.raw.order_items',
-    REF_ENTITY_DOMAIN => 'table'
-  )
-);
+AND REF_ENTITY_DOMAIN = 'table';
 
 -- Create alert tracking table
 CREATE TABLE IF NOT EXISTS data_quality_alerts (
