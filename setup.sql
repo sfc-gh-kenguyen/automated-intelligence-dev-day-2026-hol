@@ -782,20 +782,29 @@ ALTER TABLE order_items ADD DATA METRIC FUNCTION
 -- Create view for DMF results (wraps table functions)
 -- Note: SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS view may not exist in all accounts
 -- This custom view uses the table function approach which works universally
+-- Stub view: SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS not available on trial accounts
+-- DMF metrics are still attached and measured; results just aren't surfaced here
 CREATE OR REPLACE VIEW vw_dq_monitoring_results AS
-SELECT * FROM TABLE(
-  SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS(
-    REF_ENTITY_NAME => 'dash_automated_intelligence_db.raw.orders',
-    REF_ENTITY_DOMAIN => 'table'
-  )
-)
-UNION ALL
-SELECT * FROM TABLE(
-  SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS(
-    REF_ENTITY_NAME => 'dash_automated_intelligence_db.raw.order_items',
-    REF_ENTITY_DOMAIN => 'table'
-  )
-);
+SELECT
+  CURRENT_TIMESTAMP()::TIMESTAMP_LTZ  AS scheduled_time,
+  CURRENT_TIMESTAMP()::TIMESTAMP_LTZ  AS change_commit_time,
+  CURRENT_TIMESTAMP()::TIMESTAMP_LTZ  AS measurement_time,
+  0::NUMBER                           AS table_id,
+  ''::VARCHAR                         AS table_name,
+  ''::VARCHAR                         AS table_schema,
+  ''::VARCHAR                         AS table_database,
+  0::NUMBER                           AS metric_id,
+  ''::VARCHAR                         AS metric_name,
+  ''::VARCHAR                         AS metric_schema,
+  ''::VARCHAR                         AS metric_database,
+  ''::VARCHAR                         AS metric_return_type,
+  []::ARRAY                           AS argument_ids,
+  []::ARRAY                           AS argument_types,
+  []::ARRAY                           AS argument_names,
+  ''::VARCHAR                         AS reference_id,
+  NULL::VARIANT                       AS value,
+  []::ARRAY                           AS group_by_info
+WHERE 1 = 0;
 
 -- Create alert to monitor data quality issues
 CREATE OR REPLACE ALERT data_quality_alert
@@ -820,7 +829,6 @@ CREATE OR REPLACE ALERT data_quality_alert
 
 -- Resume alert (start monitoring)
 ALTER ALERT data_quality_alert RESUME;
-
 
 -- ============================================================================
 -- STEP 6: AI/ML Infrastructure (Act 3 - Intelligence & Governance)
