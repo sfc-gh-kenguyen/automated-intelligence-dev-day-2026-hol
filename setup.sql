@@ -33,6 +33,7 @@ CREATE OR REPLACE ROLE AUTOMATED_INTELLIGENCE_ADMIN
 SET current_user = (SELECT CURRENT_USER());
 GRANT ROLE AUTOMATED_INTELLIGENCE_ADMIN TO USER IDENTIFIER($current_user);
 ALTER USER IDENTIFIER($current_user) SET DEFAULT_ROLE = AUTOMATED_INTELLIGENCE_ADMIN;
+GRANT IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
 
 GRANT CREATE SNOWFLAKE INTELLIGENCE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
 GRANT CREATE DATABASE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
@@ -782,19 +783,18 @@ ALTER TABLE order_items ADD DATA METRIC FUNCTION
 -- Note: SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS view may not exist in all accounts
 -- This custom view uses the table function approach which works universally
 CREATE OR REPLACE VIEW vw_dq_monitoring_results AS
-SELECT *
-FROM SNOWFLAKE.ACCOUNT_USAGE.DATA_QUALITY_MONITORING_RESULTS
-WHERE REF_ENTITY_NAME IN (
-    'dash_automated_intelligence_db.raw.orders',
-    'dash_automated_intelligence_db.raw.order_items'
+SELECT * FROM TABLE(
+  SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS(
+    REF_ENTITY_NAME => 'dash_automated_intelligence_db.raw.orders',
+    REF_ENTITY_DOMAIN => 'table'
+  )
 )
-AND REF_ENTITY_DOMAIN = 'table';
-
--- Create alert tracking table
-CREATE TABLE IF NOT EXISTS data_quality_alerts (
-  alert_time TIMESTAMP_NTZ,
-  issue_summary VARCHAR,
-  PRIMARY KEY (alert_time)
+UNION ALL
+SELECT * FROM TABLE(
+  SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS(
+    REF_ENTITY_NAME => 'dash_automated_intelligence_db.raw.order_items',
+    REF_ENTITY_DOMAIN => 'table'
+  )
 );
 
 -- Create alert to monitor data quality issues
