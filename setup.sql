@@ -33,9 +33,8 @@ CREATE OR REPLACE ROLE AUTOMATED_INTELLIGENCE_ADMIN
 SET current_user = (SELECT CURRENT_USER());
 GRANT ROLE AUTOMATED_INTELLIGENCE_ADMIN TO USER IDENTIFIER($current_user);
 ALTER USER IDENTIFIER($current_user) SET DEFAULT_ROLE = AUTOMATED_INTELLIGENCE_ADMIN;
-GRANT IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
 
--- GRANT CREATE SNOWFLAKE INTELLIGENCE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
+-- GRANT CREATE SNOWFLAKE INTELLIGENCE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN; -- Not available on all trial accounts; re-enable for CoWork section on Enterprise
 GRANT CREATE DATABASE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
 GRANT CREATE WAREHOUSE ON ACCOUNT TO ROLE AUTOMATED_INTELLIGENCE_ADMIN;
 
@@ -779,11 +778,10 @@ ALTER TABLE order_items ADD DATA METRIC FUNCTION
   SNOWFLAKE.CORE.NULL_COUNT ON (quantity),
   SNOWFLAKE.CORE.NULL_COUNT ON (unit_price);
 
--- Create view for DMF results (wraps table functions)
--- Note: SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS view may not exist in all accounts
--- This custom view uses the table function approach which works universally
--- Stub view: SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS not available on trial accounts
--- DMF metrics are still attached and measured; results just aren't surfaced here
+-- Create view for DMF results
+-- Note: SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_RESULTS is not available on all trial accounts.
+-- Stub view used for compatibility; DMFs are still attached and measured on the tables.
+-- On Enterprise accounts, replace this with the SNOWFLAKE.LOCAL table function calls.
 CREATE OR REPLACE VIEW vw_dq_monitoring_results AS
 SELECT
   CURRENT_TIMESTAMP()::TIMESTAMP_LTZ  AS scheduled_time,
@@ -805,6 +803,13 @@ SELECT
   NULL::VARIANT                       AS value,
   []::ARRAY                           AS group_by_info
 WHERE 1 = 0;
+
+-- Create alert tracking table
+CREATE TABLE IF NOT EXISTS data_quality_alerts (
+  alert_time TIMESTAMP_NTZ,
+  issue_summary VARCHAR,
+  PRIMARY KEY (alert_time)
+);
 
 -- Create alert to monitor data quality issues
 CREATE OR REPLACE ALERT data_quality_alert
@@ -829,6 +834,7 @@ CREATE OR REPLACE ALERT data_quality_alert
 
 -- Resume alert (start monitoring)
 ALTER ALERT data_quality_alert RESUME;
+
 
 -- ============================================================================
 -- STEP 6: AI/ML Infrastructure (Act 3 - Intelligence & Governance)
@@ -1266,6 +1272,9 @@ ALTER CORTEX SEARCH SERVICE dash_automated_intelligence_db.raw.customer_feedback
 -- ============================================================================
 -- Create Interactive Tables (after data load so they capture all 50M rows)
 -- Purpose: Sub-100ms queries for high-concurrency serving (GA Dec 2025)
+-- NOTE: Commented out — INTERACTIVE TABLE / INTERACTIVE WAREHOUSE syntax not
+-- available on all trial accounts. Re-enable on Enterprise or when feature is
+-- enabled. The Interactive Tables lab section will be skipped.
 -- ============================================================================
 
 USE SCHEMA dash_automated_intelligence_db.interactive;
@@ -1304,11 +1313,11 @@ SELECT
 FROM dash_automated_intelligence_db.raw.orders o
 INNER JOIN dash_automated_intelligence_db.raw.customers c ON o.customer_id = c.customer_id;
 
-CREATE OR REPLACE INTERACTIVE WAREHOUSE hol_interactive_wh
-  TABLES (customer_order_analytics, order_lookup)
-  WAREHOUSE_SIZE = 'XSMALL';
+-- CREATE OR REPLACE INTERACTIVE WAREHOUSE hol_interactive_wh
+--   TABLES (customer_order_analytics, order_lookup)
+--   WAREHOUSE_SIZE = 'XSMALL';
 
-ALTER WAREHOUSE IF EXISTS hol_interactive_wh RESUME IF SUSPENDED;
+-- ALTER WAREHOUSE IF EXISTS hol_interactive_wh RESUME IF SUSPENDED;
 
 -- Switch back to standard warehouse for remaining operations
 USE WAREHOUSE hol_wh;
